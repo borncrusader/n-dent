@@ -1,0 +1,2 @@
+gcc -g udpserver.c common.c -o udpserver
+gcc -g udpclient.c common.c -o udpclient
