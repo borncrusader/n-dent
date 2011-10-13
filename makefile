@@ -4,7 +4,7 @@ LIB       =   -lpthread
 P_CLIENT  =   p2mpclient.o
 P_SERVER  =   p2mpserver.o
 SRC       =   p2mpclient.c
-H_FILES   =   p2mpclient.h
+H_FILES   =   p2mp.h p2mpclient.h
 
 all: ccunix p2mpclient
 
