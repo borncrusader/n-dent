@@ -1,36 +1,45 @@
-#ifdef __P2MP_H
+#ifndef __P2MP_H
 #define __P2MP_H
 
-#define MAX_CLIENTS 10
+#include <netinet/in.h>
 
-struct buffer {
-  int eof;                    // Set when reached end of file
-  int N;                      // Windows size
-  int unack;                  // Last unacked seq number
-  int avail;                  // Number of nodes filled with data
-  int empty;                  // free nodes in the window
-  struct stats cli_stat;      // Stats structure
-  struct window *head;        // Head of window
-  struct window *left;        // left boundary of window
-  struct window *right;       // right boundary of window
-  struct window *tosend;      // yet to send data
-  pthread_mutext_lock lck;    // a lock for the structure
-  int sockfd[NUM_CLIENTS];    // Socket fds connecting with the receiver
-  struct sockaddr_in recv[NUM_CLIENTS];
-};
+#define FILE_NSIZE  100
+#define MSS         1500
+#define MAX_RECV    10
 
-struct stats {
-  int num_acks;               // Number of acks excluding the dup acks
-  int num_sent;               // Number of pkts sent so far
-  int dup_acks;               // Number of duplicate acks
-  int retransmissions;        // Number of fast retransmits
-  time_t rtt[NUM_CLIENTS];    // RTT of each connection
-};
+#define P2MP_ZERO(p) memset(&p, 0, sizeof(p))
 
-struct window {
-  int acks[NUM_CLIENTS];      // used by receiver
-  char buf[MSS];              // place to store data
-  struct window *next;        // pointer to next node
-};
+typedef struct {
+  int num_acks;                       // Number of acks excluding the dup acks
+  int num_sent;                       // Number of pkts sent so far
+  int dup_acks;                       // Number of duplicate acks
+  int retransmissions;                // Number of fast retransmits
+  time_t rtt[MAX_RECV];               // RTT of each connection
+}stats;
+
+typedef struct {
+  int acks[MAX_RECV];                 // used by receiver
+  char buf[MSS];                      // place to store data
+  struct window *next;                // pointer to next node
+}window;
+
+typedef struct {
+  int eof;                            // Set when reached end of file
+  int N;                              // Windows size
+  int mss;                            // Maximum segment size
+  int unack;                          // Last unacked seq number
+  int avail;                          // Number of nodes filled with data
+  int empty;                          // free nodes in the window
+  int num_recv;                       // Number of receivers
+  int sockfd[MAX_RECV];               // Socket fds connecting with the receiver
+  char filename[FILE_NSIZE];          // file to send
+  struct sockaddr_in recv[MAX_RECV];  // receivers
+  stats cli_stats;                    // Stats structure
+  window *head;                       // Head of window
+  window *left;                       // left boundary of window
+  window *right;                      // right boundary of window
+  window *tosend;                     // yet to send data
+  pthread_mutex_t lck;                // a lock for the structure
+}p2mp_pcb;
 
 #endif
