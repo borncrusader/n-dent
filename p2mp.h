@@ -1,6 +1,8 @@
 #ifdef __P2MP_H
 #define __P2MP_H
 
+#define MAX_CLIENTS 10
+
 struct buffer {
   int eof;                    // Set when reached end of file
   int N;                      // Windows size
@@ -13,7 +15,7 @@ struct buffer {
   struct window *right;       // right boundary of window
   struct window *tosend;      // yet to send data
   pthread_mutext_lock lck;    // a lock for the structure
-  int sockfd[MAX_CLIENTS];    // Socket fds connecting with the receiver
+  int sockfd[NUM_CLIENTS];    // Socket fds connecting with the receiver
   struct sockaddr_in recv[NUM_CLIENTS];
 };
 

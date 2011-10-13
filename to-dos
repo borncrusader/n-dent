@@ -62,3 +62,31 @@ DROP IF Q <= P ELSE
 CALCULATE CHECKSUM
 IF EXPECTED SEQ NUMBER ? SEND ACK, WRITE MAX DATA POSSIBLE: BUFFER PKT
 IF LAST PKT CLOSE SOCKET
+
+
+rdt_send() {
+  if(avail < N) {
+    //read file MSS Blocks
+    //add nodes to the window
+    //pthread_cond_signal
+  }
+  else
+    //do nothing
+}
+
+
+send_data() {
+  while(true) {
+    //check if data available to be sent 
+    //if so send data
+    pthread_cond_wait();
+  }
+}
+
+
+receive_data() {
+  while(true) {
+    //block on receive
+    //handle acks
+  }
+}
