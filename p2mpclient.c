@@ -58,9 +58,11 @@ int main(int argc, char *argv[])
     pcb.num_recv = st;
   }
 
-  pthread_create(&(pcb.buf_mgr), NULL, rdt_send, NULL);
-  pthread_create(&(pcb.sender), NULL, sender, NULL);
-  pthread_create(&(pcb.receiver), NULL, receiver, NULL);
+  pcb.win.empty = pcb.N;
+
+  pthread_create(&(pcb.buf_mgr), NULL, rdt_send, &pcb);
+  pthread_create(&(pcb.sender), NULL, sender, &pcb);
+  pthread_create(&(pcb.receiver), NULL, receiver, &pcb);
 
   pthread_exit(NULL);
 
