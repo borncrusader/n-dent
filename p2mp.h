@@ -40,6 +40,13 @@ typedef struct {
   window *right;                      // right boundary of window
   window *tosend;                     // yet to send data
   pthread_mutex_t lck;                // a lock for the structure
+  pthread_t sender;                   // thread id of the send thread
+  pthread_t receiver;                 // thread id of the receive thread
+  pthread_t buf_mgr;                  // thread id of the buffer manager
 }p2mp_pcb;
+
+void* rdt_send(void*);
+void* sender(void*);
+void* receiver(void*);
 
 #endif

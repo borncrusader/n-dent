@@ -2,6 +2,8 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include <pthread.h>
+
 #include <sys/socket.h>
 
 #include "p2mp.h"
@@ -55,6 +57,12 @@ int main(int argc, char *argv[])
 
     pcb.num_recv = st;
   }
+
+  pthread_create(&(pcb.buf_mgr), NULL, rdt_send, NULL);
+  pthread_create(&(pcb.sender), NULL, sender, NULL);
+  pthread_create(&(pcb.receiver), NULL, receiver, NULL);
+
+  pthread_exit(NULL);
 
   return 0;
 }
