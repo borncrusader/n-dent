@@ -81,14 +81,13 @@ void* rdt_send(void *args) {
       ++(pcb->win.num_avail);
 
       //send thread should block on a condition variable
-      //might wakeup send thread
+      pthread_cond_signal(&(pcb->win.win_cnd));
     }
     else {
       fseek(fp, -(pcb->mss), SEEK_CUR);
     }
 
     pthread_mutex_unlock(&(pcb->win.win_lck));
-
     sleep(BUF_TIMEOUT);
   }
 

@@ -41,6 +41,7 @@ typedef struct {
   node *tosend;                       // pointer from where to start sending
 
   pthread_mutex_t win_lck;            // lock for window
+  pthread_cond_t win_cnd;             // condition variable for window
 
 }window;
 
