@@ -1,0 +1,10 @@
+#!/bin/bash
+
+if [ -e cscope.out ];
+then
+  rm -rf cscope.*
+fi
+
+find -name '*.c' | egrep -v '.*Patch.*' | egrep -v '.*temp.*' > files.lst
+find -name '*.h' | egrep -v '.*Patch.*' | egrep -v '.*temp.*' >> files.lst
+cscope -bqi files.lst

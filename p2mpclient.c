@@ -58,7 +58,7 @@ int main(int argc, char *argv[])
     pcb.num_recv = st;
   }
 
-  pcb.win.empty = pcb.N;
+  pcb.win.num_empty = pcb.N;
 
   pthread_create(&(pcb.buf_mgr), NULL, rdt_send, &pcb);
   pthread_create(&(pcb.sender), NULL, sender, &pcb);

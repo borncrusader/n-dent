@@ -1,15 +1,20 @@
 #ifndef __P2MP_H
 #define __P2MP_H
 
+#include <stdio.h>
+#include <string.h>
+
 #include <netinet/in.h>
 
 #define FILE_NSIZE  100
 #define MSS         1500
 #define MAX_RECV    10
 
-#define P2MP_ZERO(p) memset(&p, 0, sizeof(p))
+#define BUF_TIMEOUT 2
 
-typedef struct {
+#define P2MP_ZERO(p) memset(&(p), 0, sizeof(p))
+
+typedef struct stats {
   int num_acks;                       // Number of acks excluding the dup acks
   int num_sent;                       // Number of pkts sent so far
   int dup_acks;                       // Number of duplicate acks
@@ -18,23 +23,24 @@ typedef struct {
   pthread_mutex_t st_lck;             // Lock for statistics structure
 }stats;
 
-typedef struct {
+typedef struct node {
+  int filled;                         // Set when the node is filled with data
   int acks[MAX_RECV];                 // used by receiver
   char buf[MSS];                      // place to store data
-  struct node *next;
+  struct node *next;                         // pointer to next node
 }node;
 
 typedef struct {
-  int unack;                          // Last unacked seq number
-  int avail;                          // Number of nodes filled with data
-  int empty;                          // free nodes in the window
+  int num_unack;                      // Last unacked seq number
+  int num_avail;                      // Number of nodes filled with data
+  int num_empty;                      // free nodes in the window
 
   node *head;                         // Head of the window
   node *left;                         // left boundary of window
   node *right;                        // right boundary of window
   node *tosend;                       // pointer from where to start sending
 
-  pthread_mutex_t win_lck;           // lock for window
+  pthread_mutex_t win_lck;            // lock for window
 
 }window;
 
