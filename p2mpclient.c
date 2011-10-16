@@ -46,7 +46,7 @@ int main(int argc, char *argv[])
     }
     pcb.mss = atoi(argv[argc-1]);
     pcb.N = atoi(argv[argc-2]);
-    strncpy(pcb.filename, argv[argc-3], 100);
+    strncpy(pcb.filename, argv[argc-3], FILE_NSIZE);
 
     for(i = 1 ; i < argc-3 && st <= MAX_RECV ; i+=2) {
       pcb.recv[st].sin_family = AF_INET;

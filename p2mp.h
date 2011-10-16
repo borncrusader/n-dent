@@ -50,7 +50,7 @@ typedef struct {
   int N;                              // Windows size
   int mss;                            // Maximum segment size
   int num_recv;                       // Number of receivers
-  int sockfd[MAX_RECV];               // Socket fds connecting with the receiver
+  int sockfd;                         // Socket fds connecting with the receiver
   char filename[FILE_NSIZE];          // file to send
   struct sockaddr_in recv[MAX_RECV];  // receivers
   stats cli_stats;                    // Stats structure

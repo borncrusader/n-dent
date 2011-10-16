@@ -63,6 +63,8 @@ void* rdt_send(void *args) {
         die("rdt_send: file i/o error: ", errno);
       }
     }
+
+    printf("rdt_send: MSS read from file..\n");
  
     pthread_mutex_lock(&(pcb->win.win_lck));
  
@@ -81,6 +83,8 @@ void* rdt_send(void *args) {
       ++(pcb->win.num_avail);
 
       //send thread should block on a condition variable
+
+      printf("rdt_send: pthread_cond_signal..\n");
       pthread_cond_signal(&(pcb->win.win_cnd));
     }
     else {
