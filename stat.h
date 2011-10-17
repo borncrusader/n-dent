@@ -1,6 +1,9 @@
 #ifndef __STAT_H__
 #define __STAT_H__
 
+
+// Merge this with the p2mp.h stat structure
+
 typedef struct
 {
   unsigned long pkts_rcvd;  /* number of packets (datagrams) received */
