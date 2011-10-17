@@ -38,7 +38,7 @@ typedef struct {
   node *head;                         // Head of the window
   node *left;                         // left boundary of window
   node *right;                        // right boundary of window
-  node *tosend;                       // pointer from where to start sending
+  node *tosend;                       // starting pointer of num_avail
 
   pthread_mutex_t win_lck;            // lock for window
   pthread_cond_t win_cnd;             // condition variable for window

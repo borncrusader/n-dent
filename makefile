@@ -1,6 +1,6 @@
 CC        =   gcc
 CPPFLAGS  =   -g -DDEBUG
-LIB       =   -lpthread
+LIB       =   -lrt -lpthread
 P_CLIENT  =   p2mp.o rdt_send.o send_thread.o receive_thread.o p2mpclient.o
 P_SERVER  =   p2mpserver.o
 SRC       =   p2mp.c rdt_send.c send_thread.c receive_thread.c p2mpclient.c

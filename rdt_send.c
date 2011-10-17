@@ -21,13 +21,18 @@ void buffer_init(p2mp_pcb *pcb) {
     win_ptr->next = NULL;
     P2MP_ZERO(win_ptr->acks);
 
-    if(pcb->win.head == NULL)
+    if(pcb->win.head == NULL) {
       pcb->win.head = win_ptr;
+      pcb->win.tosend = win_ptr;
+      pcb->win.left = win_ptr;
+      pcb->win.right = win_ptr;
+    }
     else {
       win_mv = pcb->win.head;
       while(win_mv->next != NULL)
         win_mv = win_mv->next;
       win_mv->next = win_ptr;
+      pcb->win.right = win_ptr;
     }
     ++i;
   }
@@ -73,11 +78,13 @@ void* rdt_send(void *args) {
     if(num_empty < N) {
 
       win_ptr = pcb->win.head;
-      while(win_ptr && win_ptr->filled == 0) {
+      while(win_ptr && win_ptr->filled == 1) {
         win_ptr = win_ptr->next;
       }
 
       strncpy(win_ptr->buf, buf, MSS);
+
+      win_ptr->filled = 1;
  
       --(pcb->win.num_empty);
       ++(pcb->win.num_avail);
