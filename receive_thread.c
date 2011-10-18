@@ -4,11 +4,13 @@
 void* receiver(void *args) {
   int ret = 0, seq_num = 0, type = 0, flags = 0;
   int pos = 0, ser_pos = 0, brk = 0;
+  int dup_ack[MAX_RECV];
   char buf[BUFFER_SIZE];
   char from[INET_ADDRSTRLEN];
   struct sockaddr_in ser;
   unsigned char looper = 1;
   node *node_ptr = NULL;
+  node *node_temp = NULL;
   socklen_t len;
 
   p2mp_pcb *pcb = (p2mp_pcb *)args;
@@ -56,11 +58,21 @@ void* receiver(void *args) {
       continue;
     }
 
+    pthread_mutex_lock(&(pcb->stats.st_lck));
+    pcb->stats.acks_rcvd[ser_pos]++;
+    pthread_mutex_unlock(&(pcb->stats.st_lck));
+
     pthread_mutex_lock(&(pcb->win.win_lck));
 
     node_ptr = pcb->win.head;
 
     while(node_ptr) {
+      if(seq_num == node_ptr->seq_num-1) {
+        dup_ack[ser_pos]++;
+        if(dup_ack[ser_pos] == 2) {
+
+        } 
+      }
 
       if(node_ptr->seq_num <= seq_num) {
         ++(node_ptr->acks[ser_pos]);
@@ -97,13 +109,15 @@ void* receiver(void *args) {
         if(brk == 1) {
           break;
         }
-        pcb->win.left = node_ptr->next;
+        node_temp = node_ptr->next;
         node_ptr->next = NULL;
-        pcb->win.right->next = node_ptr;
-        pcb->win.right = node_ptr;
-        pcb->win.head = pcb->win.left;
+        pcb->win.tail->next = node_ptr;
+        pcb->win.tail = node_ptr;
+        pcb->win.head = node_temp;
         (pcb->win.num_empty)++;
       }
+      // stop the timer!
+      timer_stop();
     }
 
     pthread_mutex_unlock(&(pcb->win.win_lck));

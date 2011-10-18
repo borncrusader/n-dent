@@ -1,13 +1,16 @@
 #include "p2mp.h"
 #include "p2mpclient.h"
 
+sig_atomic_t timer_expired;
+
 void* timer(void *args)
 {
   p2mp_pcb *pcb = (p2mp_pcb*)args;
   int looper = 1;
 
   while(looper) {
-    sleep(1);
+
+    while(!timer_expired);
 
     pthread_mutex_lock(&(pcb->win.win_lck));
     if(pcb->win.head->filled) {
@@ -29,5 +32,29 @@ void* timer(void *args)
       }
     }
     pthread_mutex_unlock(&(pcb->win.win_lck));
+
+    timer_expired = 0;
   }
+}
+
+void timer_callback(int sig)
+{
+  timer_expired = 1;
+  
+  return;
+}
+
+void timer_start(int secs)
+{
+  signal(SIGALRM, timer_callback);
+  alarm(secs);
+
+  return;
+}
+
+void timer_stop()
+{
+  signal(SIGALRM, SIG_IGN);
+
+  return;
 }

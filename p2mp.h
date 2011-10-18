@@ -49,9 +49,6 @@
 
 #define DATA_SIZE (BUFFER_SIZE-HEADER_SIZE)
 
-#define INCREMENT_STAT(_s,_val,_step) \
-  (_s)->_val+=_step
-
 #define INITIALISE_STAT(_s) \
   memset(_s,0,sizeof(stat_t))
 

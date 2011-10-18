@@ -35,6 +35,11 @@ void* sender(void *args) {
           printf("sender : EOM reached!\n");
           looper = 0;
         }
+
+        // start the timer
+        if(node_ptr == pcb->win.head) {
+          timer_start(ACK_TIMEOUT);
+        }
         seq_num++;
         node_ptr = node_ptr->next;
       }

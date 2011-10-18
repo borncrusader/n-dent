@@ -21,15 +21,14 @@ void buffer_init(p2mp_pcb *pcb) {
     if(pcb->win.head == NULL) {
       pcb->win.head = node_ptr;
       pcb->win.to_send = node_ptr;
-      pcb->win.left = node_ptr;
-      pcb->win.right = node_ptr;
+      pcb->win.tail = node_ptr;
     }
     else {
       node_mv = pcb->win.head;
       while(node_mv->next != NULL)
         node_mv = node_mv->next;
       node_mv->next = node_ptr;
-      pcb->win.right = node_ptr;
+      pcb->win.tail = node_ptr;
     }
     ++i;
   }
@@ -92,7 +91,6 @@ void* rdt_send(void *args) {
       node_ptr->flags = flags;
  
       --(pcb->win.num_empty);
-      ++(pcb->win.num_avail);
 
       pcb->win.data_available = 1;
       printf("rdt_send : data available!\n");
