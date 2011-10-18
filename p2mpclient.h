@@ -12,6 +12,10 @@
 
 #define BUF_TIMEOUT 2
 
+//Protocol Types
+#define SYN         0x01010101        // SYN packet
+#define ACK         0x10101010        // ACK packet
+
 typedef struct stats {
   int num_acks;                       // Number of acks excluding the dup acks
   int num_sent;                       // Number of pkts sent so far
@@ -22,6 +26,7 @@ typedef struct stats {
 }stats;
 
 typedef struct node {
+  int seq_num;                        // sequence number; 0 when filled is 0
   int filled;                         // Set when the node is filled with data
   int acks[MAX_RECV];                 // used by receiver
   char buf[MSS];                      // place to store data
