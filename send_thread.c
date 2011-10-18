@@ -3,6 +3,7 @@
 #include <pthread.h>
 
 #include "p2mp.h"
+#include "p2mpclient.h"
 
 void* sender(void *args) {
   unsigned char looper = 1;

@@ -3,6 +3,7 @@
 #include <errno.h>
 
 #include "p2mp.h"
+#include "p2mpclient.h"
 
 void buffer_init(p2mp_pcb *pcb) {
   int i = 0, N = 0;

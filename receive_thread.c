@@ -1,6 +1,7 @@
 #include <stdio.h>
 
 #include "p2mp.h"
+#include "p2mpclient.h"
 
 void* receiver(void *args) {
   struct sockaddr_in ser;
