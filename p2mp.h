@@ -6,9 +6,9 @@
 
 #include <netinet/in.h>
 
-#define FILE_NSIZE  100
-#define MSS         1500
-#define MAX_RECV    10
+#define FILE_NSIZE  100               // File name size
+#define MSS         1500              // Maximum segment size of a packet
+#define MAX_RECV    10                // Maximum number of receivers
 
 #define BUF_TIMEOUT 2
 
@@ -27,7 +27,7 @@ typedef struct node {
   int filled;                         // Set when the node is filled with data
   int acks[MAX_RECV];                 // used by receiver
   char buf[MSS];                      // place to store data
-  struct node *next;                         // pointer to next node
+  struct node *next;                  // pointer to next node
 }node;
 
 typedef struct {
