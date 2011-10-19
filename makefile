@@ -6,7 +6,7 @@ P_SERVER  =   p2mpserver.o
 SRC       =   p2mp.c rdt_send.c send_thread.c common.c receive_thread.c p2mpclient.c p2mpserver.c
 H_FILES   =   p2mp.h p2mpclient.h p2mpserver.h common.h
 
-all: ccunix p2mpclient
+all: ccunix p2mpclient p2mpserver
 
 ccunix:
 	$(CC) $(CPPFLAGS) -c $(SRC)
