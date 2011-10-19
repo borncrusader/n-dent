@@ -1,10 +1,13 @@
 #include <stdio.h>
+#include <sys/types.h>
+#include <netinet/in.h>
+#include <arpa/inet.h>
 #include <string.h>
 #include <math.h>
 #include <pthread.h>
 #include <sys/socket.h>
 #include "p2mpserver.h"
-#include <error.h>
+#include <errno.h>
 
 void usage() {
 	printf("Please specify all the arguments\n");
@@ -18,6 +21,7 @@ void usage() {
 
 int main(int argc, char *argv[])
 {
+	int sock_status;
 	if(argc!=5)
 		usage();
 	else if(atoi(argv[4]) < 0 || atoi(argv[4]) > 1)
@@ -32,7 +36,7 @@ int main(int argc, char *argv[])
 
 	if((serv.sock_server = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP)) == -1) {
 		die("Server Socket creation failed",errno);
-		return 1;
+		return errno;
 	}
 	
 	serv.server.sin_family = AF_INET;
@@ -42,10 +46,15 @@ int main(int argc, char *argv[])
 	if(bind(serv.sock_server, (struct sockaddr*)&serv.server, sizeof(serv.server)) == -1) {
 		close(serv.sock_server);
 		die("Server bind failed",errno);
-		return 1;
+		return errno;
 	}
 	
+	sock_status = shutdown(serv.sock_server,2);
+  	if(sock_status != 0) {
+    		die("Error in socket termination for server: ", errno);
+  	}
 	close(serv.sock_server);
+	
 	return 0;
 }
 
