@@ -4,10 +4,11 @@
 #include "p2mp.h"
 
 typedef struct stats {
-  int num_acks;                       // Number of acks excluding the dup acks
-  int num_sent;                       // Number of pkts sent so far
-  int dup_acks;                       // Number of duplicate acks
-  int retransmissions;                // Number of fast retransmits
+  unsigned long num_acks_rcvd;        // Number of acks excluding the dup acks
+  unsigned long num_pkts_sent;        // Number of pkts sent so far
+  unsigned long num_bytes_sent;       // Number of bytes sent so far
+  unsigned long num_dup_acks_rcvd;    // Number of duplicate acks
+  unsigned long num_rtrans_sent;      // Number of fast retransmits
   time_t rtt[MAX_RECV];               // RTT of each connection
   pthread_mutex_t st_lck;             // Lock for statistics structure
 }stats;

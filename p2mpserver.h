@@ -3,6 +3,16 @@
 
 #include "p2mp.h"
 
+typedef struct stats {
+  unsigned long num_pkts_rcvd;        // number of packets received
+  unsigned long num_bytes_rcvd;       // number of bytes received
+  unsigned long num_acks_sent;        // number of acks sent excluding the dup acks
+  unsigned long num_dup_acks_sent;    // number of dup acks sent
+  unsigned long num_pkts_drop;        // number of packets dropped
+  unsigned long num_pkts_wrong;       // number of packets corrupted
+  pthread_mutex_t st_lck;             // Lock for statistics structure
+}stats;
+
 typedef struct rev_window {
         struct node *left;
         struct node *right;

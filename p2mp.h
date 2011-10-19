@@ -43,9 +43,16 @@
 
 #define FLAG_EOM 0x01                 // denoting the end of message
 
-#define P2MP_ZERO(p) memset(&(p), 0, sizeof(p))
+#define P2MP_ZERO(p) \
+  memset(&(p), 0, sizeof(p))
 
 #define DATA_SIZE (BUFFER_SIZE-HEADER_SIZE)
+
+#define INCREMENT_STAT(_s,_val,_step) \
+  (_s)->_val+=_step
+
+#define INITIALISE_STAT(_s) \
+  memset(_s,0,sizeof(stat_t))
 
 void die(const char*, int);
 void warn(const char*, int);
