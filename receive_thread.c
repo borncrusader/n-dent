@@ -11,7 +11,7 @@ void* receiver(void *args) {
   char from[INET_ADDRSTRLEN];
   struct sockaddr_in ser;
   unsigned char looper = 1;
-  node *win_ptr = NULL;
+  node *win_ptr = NULL, *win_re_ptr = NULL;
   socklen_t len;
 
   p2mp_pcb *pcb = (p2mp_pcb *)args;
@@ -42,7 +42,9 @@ void* receiver(void *args) {
       continue;
     }
 
-    if(type != ACK) {
+    if(type != MSG_TYPE_ACK) {
+      warn("receiver: received a dubious packet", 0);
+      continue;
     }
 
     pthread_mutex_lock(&(pcb->pcb_lck));
@@ -69,8 +71,26 @@ void* receiver(void *args) {
 
       if(win_ptr->seq_num == seq_num) {
         ++(win_ptr->acks[ser_pos]);
-        if(win_ptr->acks[ser_pos] == 3) {
+        if(win_ptr->acks[ser_pos] > 2) {
           // Fast Retransmit code
+          // Resend packet to all servers from which we have not received any ACK
+          flags = 0;
+          if(win_ptr->eof == 1) {
+            flags = FLAG_EOM;
+          }
+
+          pos = 0;
+          while(pos < pcb->num_recv) {
+            if(win_ptr->acks[pos] == 0 ||
+                win_ptr->acks[pos] > 2) {
+
+              // pack_data needs to return a buf containing msg+header
+              // pack_data(win_ptr->seq_num, MSG_TYPE_DATA, flags, win_ptr->buf, pcb->mss+HEADER_SIZE);
+
+              sendto(pcb->sock_fd, buffer, pcb->mss+HEADER_SIZE, 0, (struct sockaddr *)&(pcb->recv[pos]), sizeof(pcb->recv[pos]));
+            }
+          }
+
         }
         else
           break;
@@ -79,6 +99,5 @@ void* receiver(void *args) {
     }
 
   }
-
   return;
 }
