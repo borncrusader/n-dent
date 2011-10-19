@@ -12,16 +12,19 @@ void usage() {
         printf("port# - Port number to which the server is listening\n");
         printf("file-name - File where the data will be written\n");
         printf("N - Window size\n");
-        printf("p - Probability of packet loss\n");
+        printf("p - Probability of packet loss, ranges between 0 and 1\n");
         exit(1);
 }
 
 int main(int argc, char *argv[])
 {
 	if(argc!=5)
-	usage();
+		usage();
+	else if(atoi(argv[4]) < 0 || atoi(argv[4]) > 1)
+		usage();
 
 	p2mp_sb serv;
+	P2MP_ZERO(serv);
 	
 	serv.p = atoi(argv[4]);
 	serv.N = atoi(argv[3]);
