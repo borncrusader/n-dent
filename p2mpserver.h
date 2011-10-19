@@ -21,7 +21,7 @@ typedef struct p2mp_sb {
 	int N;
 	int sock_server;
 	char filename[FILE_NSIZE];
-	struct sockaddr_in sender;
+	struct sockaddr_in server;
 	struct rev_window w;
 } p2mp_sb;
 

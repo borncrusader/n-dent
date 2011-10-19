@@ -4,6 +4,7 @@
 #include <pthread.h>
 #include <sys/socket.h>
 #include "p2mpserver.h"
+#include <error.h>
 
 void usage()
 {
@@ -22,9 +23,25 @@ int main(int argc, char *argv[])
 	if(argc!=5)
 	usage();
 	
-	p2mp_sb server;
-		
+	p2mp_sb serv;
 
-	return 0;
+	if((serv.sock_server = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP)) == -1) {
+		die("Server Socket creation failed");
+		return 1;
+	}
+	
+	serv.server.sin_family = AF_INET;
+	serv.server.sin_addr.s_addr = INADDR_ANY;
+	serv.server.sin_port= htons(htons(atoi(argv[1])));	
+
+	if(bind(serv.sock_server, (struct sockaddr*)&serv.server, sizeof(serv.server)) == -1) {
+	close(serv.sock_server);
+	die("Server bind failed");
+	return 1;
+	}
+	
+
+
+return 0;
 }
 
