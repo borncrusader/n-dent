@@ -22,6 +22,10 @@ int main(int argc, char *argv[])
 	usage();
 
 	p2mp_sb serv;
+	
+	serv.p = atoi(argv[4]);
+	serv.N = atoi(argv[3]);
+	strcmp(serv.filename, argv[2]);
 
 	if((serv.sock_server = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP)) == -1) {
 		die("Server Socket creation failed",errno);
