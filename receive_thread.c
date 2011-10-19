@@ -7,7 +7,7 @@
 void* receiver(void *args) {
   int ret = 0, seq_num = 0, type = 0, flags = 0;
   int pos = 0, ser_pos = 0;
-  char buf[MSS];
+  char buf[BUFFER_SIZE];
   char from[INET_ADDRSTRLEN];
   struct sockaddr_in ser;
   unsigned char looper = 1;
@@ -19,7 +19,7 @@ void* receiver(void *args) {
   printf("receiver: waiting for acks..\n");
 
   while(looper) {
-    ret = recvfrom(pcb->sockfd, buf, MSS-1, 0, (struct sockaddr*)&ser, &len);
+    ret = recvfrom(pcb->sockfd, buf, BUFFER_SIZE-1, 0, (struct sockaddr*)&ser, &len);
 
     inet_ntop(AF_INET, &ser, from, INET_ADDRSTRLEN);
     from[INET_ADDRSTRLEN] = '\0';
@@ -42,7 +42,7 @@ void* receiver(void *args) {
       continue;
     }
 
-    if(type != ACK) {
+    if(type != MSG_TYPE_ACK) {
     }
 
     pthread_mutex_lock(&(pcb->pcb_lck));

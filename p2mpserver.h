@@ -29,9 +29,9 @@ typedef struct p2mp_sb {
 typedef struct node {
 	int seqnum;
 	int filled;
-	char buf[MSS];
-	struct node *next;
 	int ack;
+	char buf[BUFFER_SIZE];
+	struct node *next;
 }node;
 
 #endif

@@ -22,7 +22,8 @@ typedef struct node {
   int seq_num;                        // sequence number; 0 when filled is 0
   int filled;                         // Set when the node is filled with data
   int acks[MAX_RECV];                 // used by receiver
-  char buf[MSS];                      // place to store data
+  int buf_size;                       // number of bytes in the buffer
+  char buf[BUFFER_SIZE];              // place to store data
   struct node *next;                  // pointer to next node
 }node;
 
@@ -31,13 +32,14 @@ typedef struct {
   int num_avail;                      // Number of nodes filled with data
   int num_empty;                      // free nodes in the window
 
+  int data_available;                 // the aggregator thread sets this if data is available
+
   node *head;                         // Head of the window
   node *left;                         // left boundary of window
   node *right;                        // right boundary of window
   node *tosend;                       // starting pointer of num_avail
 
   pthread_mutex_t win_lck;            // lock for window
-  pthread_cond_t win_cnd;             // condition variable for window
 
 }window;
 
