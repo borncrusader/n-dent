@@ -21,7 +21,7 @@ void* sender(void *args) {
 
         node_ptr->seq_num = seq_num;
 
-        pack_data(seq_num, MSG_TYPE_DATA, node_ptr->eof, buf_to_send, node_ptr->buf_size+HEADER_SIZE);
+        pack_data(seq_num, MSG_TYPE_DATA, node_ptr->flags, buf_to_send, node_ptr->buf_size+HEADER_SIZE);
 
         for(i=0;i<pcb->num_recv;i++) {
           printf("sending packet:%d to receiver:%d\n", seq_num, i);
@@ -35,12 +35,14 @@ void* sender(void *args) {
             warn("sender: sento() failed! : ", errno);
           }
         }
-        if(node_ptr->eof) {
+        if(node_ptr->flags & FLAG_EOM) {
           looper = 0;
         }
         seq_num++;
+        node_ptr = node_ptr->next;
       }
 
+      pcb->win.data_available = 0;
       pthread_mutex_unlock(&(pcb->win.win_lck));
     }
   }

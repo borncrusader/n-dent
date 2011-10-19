@@ -3,33 +3,33 @@
 
 void buffer_init(p2mp_pcb *pcb) {
   int i = 0, N = 0;
-  node *win_ptr = NULL, *win_mv = NULL;
+  node *node_ptr = NULL, *node_mv = NULL;
 
   N = pcb->N;
 
   while(i < N) {
 
-    win_ptr = (node*)malloc(sizeof(node));
-    if(win_ptr == NULL) {
+    node_ptr = (node*)malloc(sizeof(node));
+    if(node_ptr == NULL) {
       die("buffer_init: malloc failed! : ", errno);
     }
 
-    win_ptr->filled = 0;
-    win_ptr->next = NULL;
-    P2MP_ZERO(win_ptr->acks);
+    node_ptr->filled = 0;
+    node_ptr->next = NULL;
+    P2MP_ZERO(node_ptr->acks);
 
     if(pcb->win.head == NULL) {
-      pcb->win.head = win_ptr;
-      pcb->win.tosend = win_ptr;
-      pcb->win.left = win_ptr;
-      pcb->win.right = win_ptr;
+      pcb->win.head = node_ptr;
+      pcb->win.tosend = node_ptr;
+      pcb->win.left = node_ptr;
+      pcb->win.right = node_ptr;
     }
     else {
-      win_mv = pcb->win.head;
-      while(win_mv->next != NULL)
-        win_mv = win_mv->next;
-      win_mv->next = win_ptr;
-      pcb->win.right = win_ptr;
+      node_mv = pcb->win.head;
+      while(node_mv->next != NULL)
+        node_mv = node_mv->next;
+      node_mv->next = node_ptr;
+      pcb->win.right = node_ptr;
     }
     ++i;
   }
@@ -37,8 +37,9 @@ void buffer_init(p2mp_pcb *pcb) {
 
 void* rdt_send(void *args) {
   p2mp_pcb *pcb;
-  node *win_ptr;
-  int i, N, num_empty, mss;
+  node *node_ptr;
+  int c, N, num_empty, mss;
+  int buf_size, flags;
   unsigned char looper = 1;
   char buf[BUFFER_SIZE];
   FILE *fp;
@@ -50,23 +51,31 @@ void* rdt_send(void *args) {
   buffer_init(pcb);
 
   fp = fopen(pcb->filename, "rb");
+  if(fp == NULL) {
+    die("rdt_send : file cannot be opened! : ", errno);
+  }
 
   while(looper) {
+    flags = 0;
 
-    P2MP_ZERO(buf);
+    memcpy(buf, 0, sizeof(buf));
 
-    if(!fread(buf, 1, pcb->mss, fp)) {
-      if(feof(fp)) {
-        pcb->eof = 1;
-        looper = 0;
-      }
-      else if(ferror(fp)) {
-        fclose(fp);
-        die("rdt_send: file i/o error: ", errno);
-      }
+    buf_size = fread(buf, 1, pcb->mss, fp);
+    if(ferror(fp)) {
+      fclose(fp);
+      die("rdt_send: file i/o error: ", errno);
     }
 
-    printf("rdt_send: MSS read from file..\n");
+    // peek and unpeek last character
+    c = fgetc(fp);
+    ungetc(c,fp);
+
+    if (c == -1) {
+      flags = FLAG_EOM;
+      looper = 0;
+    }
+
+    printf("rdt_send: %d read from file..\n", buf_size);
  
     pthread_mutex_lock(&(pcb->win.win_lck));
  
@@ -74,25 +83,24 @@ void* rdt_send(void *args) {
  
     if(num_empty < N) {
 
-      win_ptr = pcb->win.head;
-      while(win_ptr && win_ptr->filled == 1) {
-        win_ptr = win_ptr->next;
+      node_ptr = pcb->win.head;
+      while(node_ptr && node_ptr->filled == 1) {
+        node_ptr = node_ptr->next;
       }
 
-      strncpy(win_ptr->buf, buf, BUFFER_SIZE);
+      strncpy(node_ptr->buf, buf, BUFFER_SIZE);
 
-      win_ptr->filled = 1;
+      node_ptr->filled = 1;
+      node_ptr->buf_size = buf_size;
+      node_ptr->flags = flags;
  
       --(pcb->win.num_empty);
       ++(pcb->win.num_avail);
 
-      //send thread should block on a condition variable
-
-      printf("rdt_send: pthread_cond_signal..\n");
-      pthread_cond_signal(&(pcb->win.win_cnd));
+      pcb->win.data_available = 1;
     }
     else {
-      fseek(fp, -(pcb->mss), SEEK_CUR);
+      fseek(fp, -buf_size, SEEK_CUR);
     }
 
     pthread_mutex_unlock(&(pcb->win.win_lck));

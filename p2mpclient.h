@@ -14,7 +14,7 @@ typedef struct stats {
 }stats;
 
 typedef struct node {
-  int eof;                            // Set when reached end of file
+  int flags;                            // Set when reached end of file
   int seq_num;                        // sequence number; 0 when filled is 0
   int filled;                         // Set when the node is filled with data
   int acks[MAX_RECV];                 // used by receiver

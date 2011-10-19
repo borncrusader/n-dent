@@ -72,7 +72,7 @@ void* receiver(void *args) {
           // Fast Retransmit code
           // Resend packet to all servers from which we have not received any ACK
           memcpy(buf+HEADER_SIZE, node_ptr->buf, node_ptr->buf_size);
-          pack_data(node_ptr->seq_num, MSG_TYPE_DATA, node_ptr->eof, buf, node_ptr->buf_size+HEADER_SIZE);
+          pack_data(node_ptr->seq_num, MSG_TYPE_DATA, node_ptr->flags, buf, node_ptr->buf_size+HEADER_SIZE);
 
           for(pos = 0 ; pos < pcb->num_recv ; ++pos) {
             if(node_ptr->acks[pos] == 0 ||
