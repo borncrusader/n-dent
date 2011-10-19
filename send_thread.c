@@ -22,11 +22,6 @@ void* sender(void *args) {
 
     printf("sender: timedout (or) got data from rdt_send..\n");
 
-    if(pcb->eof == 1) {
-      pthread_mutex_unlock(&(pcb->win.win_lck));
-      break;
-    }
-    
     pthread_mutex_unlock(&(pcb->win.win_lck));
   }
   return;

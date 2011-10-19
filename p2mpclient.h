@@ -22,6 +22,7 @@ typedef struct stats {
 }stats;
 
 typedef struct node {
+  int eof;                            // Set when reached end of file
   int seq_num;                        // sequence number; 0 when filled is 0
   int filled;                         // Set when the node is filled with data
   int acks[MAX_RECV];                 // used by receiver
@@ -45,7 +46,6 @@ typedef struct {
 }window;
 
 typedef struct {
-  int eof;                            // Set when reached end of file
   int N;                              // Windows size
   int mss;                            // Maximum segment size
   int num_recv;                       // Number of receivers
