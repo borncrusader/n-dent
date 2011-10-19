@@ -1,7 +1,3 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <errno.h>
-
 #include "p2mp.h"
 #include "p2mpclient.h"
 

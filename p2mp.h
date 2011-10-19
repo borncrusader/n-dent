@@ -1,7 +1,19 @@
 #ifndef __P2MP_H
 #define __P2MP_H
 
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 #include <stdint.h>
+#include <math.h>
+#include <errno.h>
+#include <sys/types.h>
+
+#include <pthread.h>
+
+#include <sys/socket.h>
+#include <netinet/in.h>
+#include <arpa/inet.h>
 
 /*
  * ------------------------

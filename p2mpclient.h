@@ -1,11 +1,6 @@
 #ifndef __P2MPCLIENT_H__
 #define __P2MPCLIENT_H__
 
-#include <stdio.h>
-#include <string.h>
-
-#include <netinet/in.h>
-
 #include "p2mp.h"
 
 typedef struct stats {

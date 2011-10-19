@@ -1,12 +1,6 @@
 #ifndef __P2MPSERVER_H__
 #define __P2MPSERVER_H__
 
-#include<stdio.h>
-#include<string.h>
-#include<pthread.h>
-#include<sys/socket.h>
-#include<netinet/in.h>
-
 #include "p2mp.h"
 
 typedef struct rev_window {
