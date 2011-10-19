@@ -12,10 +12,6 @@
 
 #define BUF_TIMEOUT 2
 
-//Protocol Types
-#define SYN         0x01010101        // SYN packet
-#define ACK         0x10101010        // ACK packet
-
 typedef struct stats {
   int num_acks;                       // Number of acks excluding the dup acks
   int num_sent;                       // Number of pkts sent so far
