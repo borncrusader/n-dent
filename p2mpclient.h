@@ -6,11 +6,7 @@
 
 #include <netinet/in.h>
 
-#define FILE_NSIZE  100               // File name size
-#define MSS         1500              // Maximum segment size of a packet
-#define MAX_RECV    10                // Maximum number of receivers
-
-#define BUF_TIMEOUT 2
+#include "p2mp.h"
 
 typedef struct stats {
   int num_acks;                       // Number of acks excluding the dup acks
