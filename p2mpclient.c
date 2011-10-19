@@ -1,11 +1,3 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-
-#include <pthread.h>
-
-#include <sys/socket.h>
-
 #include "p2mp.h"
 #include "p2mpclient.h"
 
@@ -41,7 +33,7 @@ int main(int argc, char *argv[])
     if(argc < 6) {
       usage();
     }
-    if(atoi(argv[argc-1]) < 0 || atoi(argv[argc-1]) > MSS) {
+    if(atoi(argv[argc-1]) < 0 || atoi(argv[argc-1]) > BUFFER_SIZE) {
       usage();
     }
     pcb.mss = atoi(argv[argc-1]);

@@ -1,17 +1,14 @@
-#include <stdio.h>
-#include <errno.h>
-
 #include "p2mp.h"
 #include "p2mpclient.h"
 
 void* receiver(void *args) {
   int ret = 0, seq_num = 0, type = 0, flags = 0;
   int pos = 0, ser_pos = 0;
-  char buf[MSS];
+  char buf[BUFFER_SIZE];
   char from[INET_ADDRSTRLEN];
   struct sockaddr_in ser;
   unsigned char looper = 1;
-  node *win_ptr = NULL, *win_re_ptr = NULL;
+  node *node_ptr = NULL;
   socklen_t len;
 
   p2mp_pcb *pcb = (p2mp_pcb *)args;
@@ -19,7 +16,7 @@ void* receiver(void *args) {
   printf("receiver: waiting for acks..\n");
 
   while(looper) {
-    ret = recvfrom(pcb->sockfd, buf, MSS-1, 0, (struct sockaddr*)&ser, &len);
+    ret = recvfrom(pcb->sockfd, buf, BUFFER_SIZE, 0, (struct sockaddr*)&ser, &len);
 
     inet_ntop(AF_INET, &ser, from, INET_ADDRSTRLEN);
     from[INET_ADDRSTRLEN] = '\0';
@@ -65,29 +62,23 @@ void* receiver(void *args) {
 
     pthread_mutex_lock(&(pcb->win.win_lck));
 
-    win_ptr = pcb->win.head;
+    node_ptr = pcb->win.head;
 
-    while(win_ptr) {
+    while(node_ptr) {
 
-      if(win_ptr->seq_num == seq_num) {
-        ++(win_ptr->acks[ser_pos]);
-        if(win_ptr->acks[ser_pos] > 2) {
+      if(node_ptr->seq_num == seq_num) {
+        ++(node_ptr->acks[ser_pos]);
+        if(node_ptr->acks[ser_pos] > 2) {
           // Fast Retransmit code
           // Resend packet to all servers from which we have not received any ACK
-          flags = 0;
-          if(win_ptr->eof == 1) {
-            flags = FLAG_EOM;
-          }
+          memcpy(buf+HEADER_SIZE, node_ptr->buf, node_ptr->buf_size);
+          pack_data(node_ptr->seq_num, MSG_TYPE_DATA, node_ptr->eof, buf, node_ptr->buf_size+HEADER_SIZE);
 
-          pos = 0;
-          while(pos < pcb->num_recv) {
-            if(win_ptr->acks[pos] == 0 ||
-                win_ptr->acks[pos] > 2) {
+          for(pos = 0 ; pos < pcb->num_recv ; ++pos) {
+            if(node_ptr->acks[pos] == 0 ||
+                node_ptr->acks[pos] > 2) {
 
-              // pack_data needs to return a buf containing msg+header
-              // pack_data(win_ptr->seq_num, MSG_TYPE_DATA, flags, win_ptr->buf, pcb->mss+HEADER_SIZE);
-
-              sendto(pcb->sock_fd, buffer, pcb->mss+HEADER_SIZE, 0, (struct sockaddr *)&(pcb->recv[pos]), sizeof(pcb->recv[pos]));
+              sendto(pcb->sockfd, buf, pcb->mss+HEADER_SIZE, 0, (struct sockaddr *)&(pcb->recv[pos]), sizeof(pcb->recv[pos]));
             }
           }
 
@@ -95,7 +86,7 @@ void* receiver(void *args) {
         else
           break;
       }
-      win_ptr = win_ptr->next;
+      node_ptr = node_ptr->next;
     }
 
   }

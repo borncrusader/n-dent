@@ -1,28 +1,48 @@
-#include <stdio.h>
-#include <unistd.h>
-#include <pthread.h>
-
 #include "p2mp.h"
 #include "p2mpclient.h"
 
 void* sender(void *args) {
   unsigned char looper = 1;
-  struct timespec s_timer;
   p2mp_pcb *pcb = (p2mp_pcb*)args;
+  node *node_ptr = NULL;
+  unsigned int seq_num = 0;
+  char buf_to_send[BUFFER_SIZE];
+  int ret, i;
 
   pcb->sockfd = socket(AF_INET, SOCK_STREAM, 0);
 
   while(looper) {
-    pthread_mutex_lock(&(pcb->win.win_lck));
 
-    clock_gettime(CLOCK_REALTIME, &s_timer);
-    s_timer.tv_sec += 2;
+    if(pcb->win.data_available) {
+      pthread_mutex_lock(&(pcb->win.win_lck));
+      node_ptr = pcb->win.head;
+      while(node_ptr != NULL && node_ptr->filled == 1) {
+        memcpy(buf_to_send+HEADER_SIZE, node_ptr->buf, node_ptr->buf_size);
 
-    pthread_cond_timedwait(&(pcb->win.win_cnd), &(pcb->win.win_lck), &s_timer);
+        node_ptr->seq_num = seq_num;
 
-    printf("sender: timedout (or) got data from rdt_send..\n");
+        pack_data(seq_num, MSG_TYPE_DATA, node_ptr->eof, buf_to_send, node_ptr->buf_size+HEADER_SIZE);
 
-    pthread_mutex_unlock(&(pcb->win.win_lck));
+        for(i=0;i<pcb->num_recv;i++) {
+          printf("sending packet:%d to receiver:%d\n", seq_num, i);
+          ret = sendto(pcb->sockfd,
+                       buf_to_send,
+                       node_ptr->buf_size+HEADER_SIZE,
+                       0,
+                       (struct sockaddr*)(&pcb->recv[i]),
+                       sizeof(struct sockaddr_in));
+          if(ret==-1) {
+            warn("sender: sento() failed! : ", errno);
+          }
+        }
+        if(node_ptr->eof) {
+          looper = 0;
+        }
+        seq_num++;
+      }
+
+      pthread_mutex_unlock(&(pcb->win.win_lck));
+    }
   }
   return;
 }

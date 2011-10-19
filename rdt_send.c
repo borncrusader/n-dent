@@ -1,7 +1,3 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <errno.h>
-
 #include "p2mp.h"
 #include "p2mpclient.h"
 
@@ -44,7 +40,7 @@ void* rdt_send(void *args) {
   node *win_ptr;
   int i, N, num_empty, mss;
   unsigned char looper = 1;
-  char buf[MSS];
+  char buf[BUFFER_SIZE];
   FILE *fp;
 
   pcb = (p2mp_pcb*)args;
@@ -83,7 +79,7 @@ void* rdt_send(void *args) {
         win_ptr = win_ptr->next;
       }
 
-      strncpy(win_ptr->buf, buf, MSS);
+      strncpy(win_ptr->buf, buf, BUFFER_SIZE);
 
       win_ptr->filled = 1;
  

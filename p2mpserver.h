@@ -1,12 +1,6 @@
 #ifndef __P2MPSERVER_H__
 #define __P2MPSERVER_H__
 
-#include<stdio.h>
-#include<string.h>
-#include<pthread.h>
-#include<sys/socket.h>
-#include<netinet/in.h>
-
 #include "p2mp.h"
 
 typedef struct rev_window {
@@ -29,9 +23,9 @@ typedef struct p2mp_sb {
 typedef struct node {
 	int seqnum;
 	int filled;
-	char buf[MSS];
-	struct node *next;
 	int ack;
+	char buf[BUFFER_SIZE];
+	struct node *next;
 }node;
 
 #endif

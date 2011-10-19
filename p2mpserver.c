@@ -1,13 +1,5 @@
-#include <stdio.h>
-#include <sys/types.h>
-#include <netinet/in.h>
-#include <arpa/inet.h>
-#include <string.h>
-#include <math.h>
-#include <pthread.h>
-#include <sys/socket.h>
+#include "p2mp.h"
 #include "p2mpserver.h"
-#include <errno.h>
 
 void usage() {
 	printf("Please specify all the arguments\n");
