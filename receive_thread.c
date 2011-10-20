@@ -3,7 +3,7 @@
 
 void* receiver(void *args) {
   int ret = 0, seq_num = 0, type = 0, flags = 0;
-  int pos = 0, ser_pos = 0;
+  int pos = 0, ser_pos = 0, brk = 0;
   char buf[BUFFER_SIZE];
   char from[INET_ADDRSTRLEN];
   struct sockaddr_in ser;
@@ -19,20 +19,18 @@ void* receiver(void *args) {
     ret = recvfrom(pcb->sockfd, buf, BUFFER_SIZE, 0, (struct sockaddr*)&ser, &len);
 
     inet_ntop(AF_INET, &ser, from, INET_ADDRSTRLEN);
-    from[INET_ADDRSTRLEN] = '\0';
-
-    printf("receiver: Received msg from %s\n", from);
+    from[INET_ADDRSTRLEN-1] = '\0';
 
     if(ret == 0) { // Will this return value ever come ???
       warn("receiver: received a 0 return value : ", errno);
       // Code to remove the receiver from the p2mp_pcb structure
       continue;
-    }
-
-    if(ret == -1) {
+    } else if(ret == -1) {
       warn("receiver: recvfrom() error : ", errno);
       continue;
     }
+
+    printf("receiver: Received msg from %s\n", from);
 
     if(unpack_data(&seq_num, &type, &flags, buf, ret) == -1) {
       warn("receiver: Checksum error", 0);
@@ -44,18 +42,16 @@ void* receiver(void *args) {
       continue;
     }
 
-    pthread_mutex_lock(&(pcb->pcb_lck));
     pos = 0;
-    while(pos < MAX_RECV) {
+    while(pos < pcb->num_recv) {
       if(pcb->recv[pos].sin_addr.s_addr == ser.sin_addr.s_addr) {
         ser_pos = pos;
         break;
       }
       ++pos;
     }
-    pthread_mutex_unlock(&(pcb->pcb_lck));
 
-    if(pos == MAX_RECV) {
+    if(pos == pcb->num_recv) {
       warn("receiver: received packet from unknown server", 0);
       continue;
     }
@@ -83,12 +79,37 @@ void* receiver(void *args) {
           }
 
         }
-        else
+        else {
           break;
+        }
       }
       node_ptr = node_ptr->next;
     }
 
+    if(pcb->win.head->seq_num == seq_num) {
+      brk = 0;
+      node_ptr = pcb->win.head;
+      while(node_ptr) {
+        for(pos = 0; pos<pcb->num_recv; pos++) {
+          if(node_ptr->acks[pos] == 0) {
+            brk = 1;
+            break;
+          }
+        }
+        if(brk == 1) {
+          break;
+        }
+        pcb->win.left = node_ptr->next;
+        node_ptr->next = NULL;
+        pcb->win.right->next = node_ptr;
+        pcb->win.right = node_ptr;
+        pcb->win.head = pcb->win.left;
+        (pcb->win.num_empty)++;
+      }
+    }
+
+    pthread_mutex_unlock(&(pcb->win.win_lck));
   }
+
   return;
 }

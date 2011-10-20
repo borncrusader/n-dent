@@ -9,8 +9,6 @@ void* sender(void *args) {
   char buf_to_send[BUFFER_SIZE];
   int ret, i;
 
-  pcb->sockfd = socket(AF_INET, SOCK_DGRAM, 0);
-
   while(looper) {
 
     if(pcb->win.data_available) {

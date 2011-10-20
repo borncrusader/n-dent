@@ -44,11 +44,11 @@ typedef struct {
   int mss;                            // Maximum segment size
   int num_recv;                       // Number of receivers
   int sockfd;                         // Socket fds connecting with the receiver
+  int bind_port;                      // port to which the receiver should bind to
   char filename[FILE_NSIZE];          // file to send
   struct sockaddr_in recv[MAX_RECV];  // receivers
   stats cli_stats;                    // Stats structure
   window win;                         // window
-  pthread_mutex_t pcb_lck;            // a lock for the structure
   pthread_t sender;                   // thread id of the send thread
   pthread_t receiver;                 // thread id of the receive thread
   pthread_t buf_mgr;                  // thread id of the buffer manager
