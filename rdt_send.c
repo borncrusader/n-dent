@@ -20,7 +20,7 @@ void buffer_init(p2mp_pcb *pcb) {
 
     if(pcb->win.head == NULL) {
       pcb->win.head = node_ptr;
-      pcb->win.tosend = node_ptr;
+      pcb->win.to_send = node_ptr;
       pcb->win.left = node_ptr;
       pcb->win.right = node_ptr;
     }
@@ -38,15 +38,13 @@ void buffer_init(p2mp_pcb *pcb) {
 void* rdt_send(void *args) {
   p2mp_pcb *pcb;
   node *node_ptr;
-  int c, N, num_empty, mss;
+  int c;
   int buf_size, flags;
-  unsigned char looper = 1;
+  int looper = 1;
   char buf[BUFFER_SIZE];
   FILE *fp;
 
   pcb = (p2mp_pcb*)args;
-  N = pcb->N;
-  mss = pcb->mss;
 
   buffer_init(pcb);
 
@@ -58,7 +56,7 @@ void* rdt_send(void *args) {
   while(looper) {
     flags = 0;
 
-    memcpy(buf, 0, sizeof(buf));
+    memset(buf, 0, sizeof(buf));
 
     buf_size = fread(buf, 1, pcb->mss, fp);
     if(ferror(fp)) {
@@ -71,6 +69,7 @@ void* rdt_send(void *args) {
     ungetc(c,fp);
 
     if (c == -1) {
+      printf("rdt_send : EOM reached!\n");
       flags = FLAG_EOM;
       looper = 0;
     }
@@ -79,9 +78,7 @@ void* rdt_send(void *args) {
  
     pthread_mutex_lock(&(pcb->win.win_lck));
  
-    num_empty = pcb->win.num_empty;
- 
-    if(num_empty < N) {
+    if(pcb->win.num_empty > 0) {
 
       node_ptr = pcb->win.head;
       while(node_ptr && node_ptr->filled == 1) {
@@ -98,9 +95,13 @@ void* rdt_send(void *args) {
       ++(pcb->win.num_avail);
 
       pcb->win.data_available = 1;
+      printf("rdt_send : data available!\n");
     }
     else {
-      fseek(fp, -buf_size, SEEK_CUR);
+      if(fseek(fp, -buf_size, SEEK_CUR) == -1) {
+        die("rdt_send : fseek failed! : ", errno);
+      }
+      printf("rdt_send : fseek'ing back\n");
     }
 
     pthread_mutex_unlock(&(pcb->win.win_lck));

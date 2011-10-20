@@ -11,7 +11,7 @@
 #define FLAG_EOM 0x01
 #define FLAG_FNAME 0x02
 
-#define BUFFER_SIZE 1400
+#define BUFFER_SIZE 1008
 #define HEADER_SIZE 8
 #define DATA_SIZE (BUFFER_SIZE-HEADER_SIZE)
 

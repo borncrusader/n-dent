@@ -46,7 +46,7 @@ int main(int argc, char *argv[])
     for(i = 1 ; i < argc-3 && st <= MAX_RECV ; i+=2) {
       pcb.recv[st].sin_family = AF_INET;
       pcb.recv[st].sin_addr.s_addr = inet_addr(argv[i]);
-      pcb.recv[st].sin_port = atoi(argv[i+1]);
+      pcb.recv[st].sin_port = htons(atoi(argv[i+1]));
       ++st;
     }
 
@@ -59,7 +59,9 @@ int main(int argc, char *argv[])
   pthread_create(&(pcb.sender), NULL, sender, &pcb);
   pthread_create(&(pcb.receiver), NULL, receiver, &pcb);
 
-  pthread_exit(NULL);
+  pthread_join(pcb.buf_mgr, NULL);
+  pthread_join(pcb.sender, NULL);
+  pthread_join(pcb.receiver, NULL);
 
   return 0;
 }

@@ -80,10 +80,10 @@ void compute_checksum(uint16_t *csum, unsigned char *buf, int size)
       // overlap carry
       sum = (sum & 0xffff) + 1;
     }
-    printf("%x\t", sum);
+    //printf("%x\t", sum);
   }
 
-  printf("\n");
+  //printf("\n");
 
   *csum = sum;
   *csum = ~(*csum);
