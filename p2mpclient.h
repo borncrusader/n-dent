@@ -29,6 +29,7 @@ typedef struct {
   int num_empty;                      // free nodes in the window
 
   int data_available;                 // the aggregator thread sets this if data is available
+  int timer;                          // timer value which is decremented by the timer thread
 
   node *head;                         // Head of the window
   node *left;                         // left boundary of window
@@ -57,5 +58,6 @@ typedef struct {
 void* rdt_send(void*);
 void* sender(void*);
 void* receiver(void*);
+void* timer(void*);
 
 #endif

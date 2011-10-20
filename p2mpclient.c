@@ -57,6 +57,7 @@ int main(int argc, char *argv[])
   }
 
   pcb.win.num_empty = pcb.N;
+  pcb.win.timer     = ACK_TIMEOUT;
 
   pcb.sockfd = socket(AF_INET, SOCK_DGRAM, 0);
 

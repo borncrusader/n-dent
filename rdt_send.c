@@ -85,10 +85,10 @@ void* rdt_send(void *args) {
         node_ptr = node_ptr->next;
       }
 
-      strncpy(node_ptr->buf, buf, BUFFER_SIZE);
+      memcpy(node_ptr->buf+HEADER_SIZE, buf, buf_size);
 
       node_ptr->filled = 1;
-      node_ptr->buf_size = buf_size;
+      node_ptr->buf_size = buf_size + HEADER_SIZE; // including the header!
       node_ptr->flags = flags;
  
       --(pcb->win.num_empty);

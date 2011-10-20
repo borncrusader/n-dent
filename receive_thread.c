@@ -62,26 +62,24 @@ void* receiver(void *args) {
 
     while(node_ptr) {
 
-      if(node_ptr->seq_num == seq_num) {
+      if(node_ptr->seq_num <= seq_num) {
         ++(node_ptr->acks[ser_pos]);
         if(node_ptr->acks[ser_pos] > 2) {
           // Fast Retransmit code
           // Resend packet to all servers from which we have not received any ACK
-          memcpy(buf+HEADER_SIZE, node_ptr->buf, node_ptr->buf_size);
-          pack_data(node_ptr->seq_num, MSG_TYPE_DATA, node_ptr->flags, buf, node_ptr->buf_size+HEADER_SIZE);
-
           for(pos = 0 ; pos < pcb->num_recv ; ++pos) {
             if(node_ptr->acks[pos] == 0 ||
                 node_ptr->acks[pos] > 2) {
 
-              sendto(pcb->sockfd, buf, pcb->mss+HEADER_SIZE, 0, (struct sockaddr *)&(pcb->recv[pos]), sizeof(pcb->recv[pos]));
+              sendto(pcb->sockfd, node_ptr->buf, node_ptr->buf_size, 0, (struct sockaddr *)&(pcb->recv[pos]), sizeof(pcb->recv[pos]));
             }
           }
-
         }
         else {
           break;
         }
+      } else {
+        break;
       }
       node_ptr = node_ptr->next;
     }
