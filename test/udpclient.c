@@ -32,7 +32,7 @@ int main(int argc, char *argv[])
   addr_size = sizeof(dest_addr);
   {
     FILE *fp;
-    int fret, seq_num=123456;
+    int fret, seq_num=-1;
     int c, flags;
 
     fp = fopen(argv[3], "r");
