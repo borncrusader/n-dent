@@ -4,8 +4,11 @@
 void usage()
 {
   printf("p2mpclient server-1 server-1-port [server-2 server-2-port ... server-r server-r-port] file-name N MSS\n");
-  printf("MSS should be within 1500\n");
-  printf("Maximum number of supported receivers is 10\n");
+  printf("  server-n      - server-n's ip address\n");
+  printf("  server-n-port - server-n's port (at least 1 server should be specified, max 10)\n");
+  printf("  file-name     - file to be transferred\n");
+  printf("  N             - window size\n");
+  printf("  MSS           - maximum segment size of each segment (< 1500)\n");
   exit(1);
 }
 
