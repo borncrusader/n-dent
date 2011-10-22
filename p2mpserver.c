@@ -23,7 +23,7 @@ int main(int argc, char *argv[])
 	int sock_status_recv;
 	char buf[BUFFER_SIZE];
 	
-	int ret = 0, seq_num = 0, type = 0, flag = 0,flags=0,prev_seq_num=-1;
+	int ret = 0, seq_num = 0, type = 0, run_flag = 1,flags=0,prev_seq_num=-1;
 
 	char from[INET_ADDRSTRLEN];
 	FILE *fp;
@@ -64,9 +64,9 @@ fp = fopen(serv.filename, "w");
 
 
 
-while(flag)
+while(run_flag)
 {
-
+printf("WAITING FOR DATA: \n");
    ret = recvfrom(serv.sock_server_recv, buf, BUFFER_SIZE, 0, (struct sockaddr*)&sender, &len);
 
     inet_ntop(AF_INET, &sender, from, INET_ADDRSTRLEN);
@@ -95,7 +95,9 @@ while(flag)
 if(seq_num==prev_seq_num+1)
 {
 
+printf("TRYING TO WRITE TO FILE \n");
 fwrite(buf+HEADER_SIZE,ret-HEADER_SIZE,1,fp);
+printf("%s",buf);
 //sendack(seq_num,serv,sender,len);
 
 
@@ -103,8 +105,14 @@ pack_data(seq_num, MSG_TYPE_ACK, 0, ack_buf, 8);
 
 
 sendto(serv.sock_server_recv, ack_buf, 8, 0, (struct sockaddr*)&sender, sizeof(sender));
-
+prev_seq_num=seq_num;
 }
+
+else
+printf("Out of ORDER PACKET : \n ");
+
+
+
 }
 
 	sock_status_recv = shutdown(serv.sock_server_recv,2);
