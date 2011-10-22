@@ -68,7 +68,7 @@ void* receiver(void *args) {
 
     if(seq_num == node_ptr->seq_num-1) {
       dup_ack[ser_pos]++;
-      if(dup_ack[ser_pos] == 2) {
+      if(dup_ack[ser_pos] >= 2) {
 
         for(pos = 0 ; pos < pcb->num_recv ; ++pos) {
           if(node_ptr->acks[pos] == 0) {
