@@ -3,18 +3,20 @@
 
 #include "p2mp.h"
 
+extern sig_atomic_t timer_expired;
+
 typedef struct stats {
-  unsigned long num_acks_rcvd;        // Number of acks excluding the dup acks
-  unsigned long num_pkts_sent;        // Number of pkts sent so far
-  unsigned long num_bytes_sent;       // Number of bytes sent so far
-  unsigned long num_dup_acks_rcvd;    // Number of duplicate acks
-  unsigned long num_rtrans_sent;      // Number of fast retransmits
-  time_t rtt[MAX_RECV];               // RTT of each connection
-  pthread_mutex_t st_lck;             // Lock for statistics structure
+  unsigned long acks_rcvd[MAX_RECV];     // Number of acks excluding the dup acks
+  unsigned long pkts_sent[MAX_RECV];     // Number of pkts sent so far
+  unsigned long bytes_sent[MAX_RECV];    // Number of bytes sent so far
+  unsigned long dupacks_rcvd[MAX_RECV];  // Number of duplicate acks
+  unsigned long rtrans_sent[MAX_RECV];   // Number of fast retransmits
+  time_t rtt[MAX_RECV];                  // RTT of each connection
+  pthread_mutex_t st_lck;                // Lock for statistics structure
 }stats;
 
 typedef struct node {
-  int flags;                            // Set when reached end of file
+  int flags;                          // Set when reached end of file
   int seq_num;                        // sequence number; 0 when filled is 0
   int filled;                         // Set when the node is filled with data
   int acks[MAX_RECV];                 // used by receiver
@@ -24,16 +26,12 @@ typedef struct node {
 }node;
 
 typedef struct {
-  int num_unack;                      // Last unacked seq number
-  int num_avail;                      // Number of nodes filled with data
   int num_empty;                      // free nodes in the window
 
   int data_available;                 // the aggregator thread sets this if data is available
-  int timer;                          // timer value which is decremented by the timer thread
 
   node *head;                         // Head of the window
-  node *left;                         // left boundary of window
-  node *right;                        // right boundary of window
+  node *tail;                         // tail of the window
   node *to_send;                      // starting pointer of num_avail
 
   pthread_mutex_t win_lck;            // lock for window
@@ -53,11 +51,14 @@ typedef struct {
   pthread_t sender;                   // thread id of the send thread
   pthread_t receiver;                 // thread id of the receive thread
   pthread_t buf_mgr;                  // thread id of the buffer manager
+  pthread_t timer;                    // thread id of the timer thread
 }p2mp_pcb;
 
 void* rdt_send(void*);
 void* sender(void*);
 void* receiver(void*);
 void* timer(void*);
+void timer_start(int);
+void timer_stop();
 
 #endif
