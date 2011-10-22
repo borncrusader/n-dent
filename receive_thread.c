@@ -127,6 +127,8 @@ void* receiver(void *args) {
         if(node_ptr == pcb->win.head) {
           timer_stop();
         }
+        P2MP_ZERO(node_ptr->acks);
+        P2MP_ZERO(dup_ack);
         node_temp = node_ptr->next;
         node_ptr->next = NULL;
         pcb->win.tail->next = node_ptr;
