@@ -16,7 +16,7 @@ int main(int argc, char *argv[])
 {
 	p2mp_sb serv;
 	P2MP_ZERO(serv);
-	struct sockaddr_in sender;
+	struct sockaddr_in server,sender;
 	socklen_t len;
 	char ack_buf[8];
 
@@ -25,18 +25,19 @@ int main(int argc, char *argv[])
 	
 	int ret = 0, seq_num = 0, type = 0, flag = 0,flags=0,prev_seq_num=-1;
 
-	//char from[INET_ADDRSTRLEN];
+	char from[INET_ADDRSTRLEN];
 	FILE *fp;
 
 	
 
-	if(argc!=5)
+	if(argc!=5) {
 		usage();
-	else if(atoi(argv[4]) >= 0 || atoi(argv[4]) <= 1)
+	}
+	else if(atof(argv[4]) >= 0 || atof(argv[4]) <= 1) {
 		usage();
+	}
 	
-	
-	serv.p = atoi(argv[4]);
+	serv.p = atof(argv[4]);
 	serv.N = atoi(argv[3]);
 	strncpy(serv.filename, argv[2],FILE_NSIZE);
 
@@ -45,11 +46,11 @@ int main(int argc, char *argv[])
 		return errno;
 	}
 	
-	serv.server.sin_family = AF_INET;
-	serv.server.sin_addr.s_addr = INADDR_ANY;
-	serv.server.sin_port= (htons(atoi(argv[1])));	
+	server.sin_family = AF_INET;
+	server.sin_addr.s_addr = INADDR_ANY;
+	server.sin_port= (htons(atoi(argv[1])));	
 
-	if(bind(serv.sock_server_recv, (struct sockaddr*)&serv.server, sizeof(serv.server)) == -1) {
+	if(bind(serv.sock_server_recv, (struct sockaddr*)&server, sizeof(server)) == -1) {
 		close(serv.sock_server_recv);
 		die("Server bind failed",errno);
 		return errno;
@@ -81,7 +82,7 @@ while(flag)
     }
 
 
-    printf("receiver: Received packet from %s\n", from);
+    //printf("receiver: Received packet from %s\n", from);
 
     if(unpack_data(&seq_num, &type, &flags, buf, ret) == -1) {
       warn("receiver: Checksum error", 0);
@@ -101,7 +102,7 @@ fwrite(buf+HEADER_SIZE,ret-HEADER_SIZE,1,fp);
 pack_data(seq_num, MSG_TYPE_ACK, 0, ack_buf, 8);
 
 
-sendto(serv.sock_server_send, ack_buf, 8, 0, (struct sockaddr *)&sender, sizeof(struct sockaddr_in));
+sendto(serv.sock_server_recv, ack_buf, 8, 0, (struct sockaddr*)&sender, sizeof(sender));
 
 }
 }
