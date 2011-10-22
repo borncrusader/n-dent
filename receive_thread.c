@@ -58,45 +58,59 @@ void* receiver(void *args) {
       continue;
     }
 
-    pthread_mutex_lock(&(pcb->stats.st_lck));
-    pcb->stats.acks_rcvd[ser_pos]++;
-    pthread_mutex_unlock(&(pcb->stats.st_lck));
+    pthread_mutex_lock(&(pcb->cli_stats.st_lck));
+    pcb->cli_stats.acks_rcvd[ser_pos]++;
+    pthread_mutex_unlock(&(pcb->cli_stats.st_lck));
 
     pthread_mutex_lock(&(pcb->win.win_lck));
 
     node_ptr = pcb->win.head;
 
-    while(node_ptr) {
-      if(seq_num == node_ptr->seq_num-1) {
-        dup_ack[ser_pos]++;
-        if(dup_ack[ser_pos] == 2) {
+    if(seq_num == node_ptr->seq_num-1) {
+      dup_ack[ser_pos]++;
+      if(dup_ack[ser_pos] == 2) {
 
-        } 
+        for(pos = 0 ; pos < pcb->num_recv ; ++pos) {
+          if(node_ptr->acks[pos] == 0) {
+            sendto(pcb->sockfd,
+                node_ptr->buf,
+                node_ptr->buf_size,
+                0,
+                (struct sockaddr *)&(pcb->recv[pos]),
+                sizeof(pcb->recv[pos]));
+          }
+        }
+
       }
+    }
+
+    while(node_ptr) {
 
       if(node_ptr->seq_num <= seq_num) {
         ++(node_ptr->acks[ser_pos]);
         if(node_ptr->acks[ser_pos] > 2) {
           // Fast Retransmit code
-          // Resend packet to all servers from which we have not received any ACK
+          // Resend next packet to all servers from which we have not received ACK
           for(pos = 0 ; pos < pcb->num_recv ; ++pos) {
-            if(node_ptr->acks[pos] == 0 ||
-                node_ptr->acks[pos] > 2) {
+            if(node_ptr->next->acks[pos] == 0) {
 
-              sendto(pcb->sockfd, node_ptr->buf, node_ptr->buf_size, 0, (struct sockaddr *)&(pcb->recv[pos]), sizeof(pcb->recv[pos]));
+              sendto(pcb->sockfd,
+                  node_ptr->next->buf,
+                  node_ptr->next->buf_size,
+                  0,
+                  (struct sockaddr *)&(pcb->recv[pos]),
+                  sizeof(pcb->recv[pos]));
             }
           }
         }
-        else {
-          break;
-        }
-      } else {
+      }
+      else {
         break;
       }
       node_ptr = node_ptr->next;
     }
 
-    if(pcb->win.head->seq_num == seq_num) {
+    if(pcb->win.head->seq_num <= seq_num) {
       brk = 0;
       node_ptr = pcb->win.head;
       while(node_ptr) {
@@ -109,15 +123,18 @@ void* receiver(void *args) {
         if(brk == 1) {
           break;
         }
+
+        if(node_ptr == pcb->win.head) {
+          timer_stop();
+        }
         node_temp = node_ptr->next;
         node_ptr->next = NULL;
         pcb->win.tail->next = node_ptr;
         pcb->win.tail = node_ptr;
         pcb->win.head = node_temp;
+        node_ptr = pcb->win.head;
         (pcb->win.num_empty)++;
       }
-      // stop the timer!
-      timer_stop();
     }
 
     pthread_mutex_unlock(&(pcb->win.win_lck));
