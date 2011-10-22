@@ -6,7 +6,7 @@ sig_atomic_t timer_expired;
 void* timer(void *args)
 {
   p2mp_pcb *pcb = (p2mp_pcb*)args;
-  int looper = 1;
+  int i = 0, looper = 1, pos = 0, ret = 0;
 
   while(looper) {
 
@@ -14,19 +14,16 @@ void* timer(void *args)
 
     pthread_mutex_lock(&(pcb->win.win_lck));
     if(pcb->win.head->filled) {
-      pcb->win.timer--;
-      if(pcb->win.timer == 0) {
-        for(pos=0; pos<pcb->num_recv; pos++) {
-          if(pcb->win.acks[pos] == 0) {
-            ret = sendto(pcb->sockfd,
-                         pcb->win.head->buf,
-                         pcb->win.head->buf_size,
-                         0,
-                         (struct sockaddr*)(&(pcb->recv[i])),
-                         sizeof(struct sockaddr_in));
-            if(ret==-1) {
-              warn("timer: sento() failed! : ", errno);
-            }
+      for(pos=0; pos<pcb->num_recv; pos++) {
+        if(pcb->win.head->acks[pos] == 0) {
+          ret = sendto(pcb->sockfd,
+                       pcb->win.head->buf,
+                       pcb->win.head->buf_size,
+                       0,
+                       (struct sockaddr*)(&(pcb->recv[i])),
+                       sizeof(struct sockaddr_in));
+          if(ret==-1) {
+            warn("timer: sento() failed! : ", errno);
           }
         }
       }
