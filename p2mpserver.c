@@ -33,7 +33,7 @@ int main(int argc, char *argv[])
 	if(argc!=5) {
 		usage();
 	}
-	else if(atof(argv[4]) >= 0 || atof(argv[4]) <= 1) {
+	else if(atof(argv[4]) < 0 || atof(argv[4]) > 1) {
 		usage();
 	}
 	
