@@ -25,14 +25,14 @@ int main(int argc, char *argv[])
 	
 	int ret = 0, seq_num = 0, type = 0, flag = 0,flags=0,prev_seq_num=-1;
 
-	char from[INET_ADDRSTRLEN];
+	//char from[INET_ADDRSTRLEN];
 	FILE *fp;
 
 	
 
 	if(argc!=5)
 		usage();
-	else if(atoi(argv[4]) > 0 || atoi(argv[4]) < 1)
+	else if(atoi(argv[4]) >= 0 || atoi(argv[4]) <= 1)
 		usage();
 	
 	
@@ -56,26 +56,10 @@ int main(int argc, char *argv[])
 	}
 
 
-	if((serv.sock_server_send = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP)) == -1) {
-		die("Server ACK Socket creation failed",errno);
-		return errno;
-	}
-	
-
-	if(bind(serv.sock_server_send, (struct sockaddr*)&serv.server, sizeof(serv.server)) == -1) {
-		close(serv.sock_server_send);
-		die("Server ACK bind failed",errno);
-		return errno;
-	}
-
-
-
-
 fp = fopen(serv.filename, "w");
   if(fp == NULL) {
     die("SERVER : file cannot be opened! : ", errno);
   }
-
 
 
 
@@ -97,7 +81,6 @@ while(flag)
     }
 
 
-
     printf("receiver: Received packet from %s\n", from);
 
     if(unpack_data(&seq_num, &type, &flags, buf, ret) == -1) {
@@ -106,8 +89,6 @@ while(flag)
     }
 
 	printf("Seq number got is %d \n",seq_num);
-
-
 
 
 if(seq_num==prev_seq_num+1)
@@ -122,10 +103,7 @@ pack_data(seq_num, MSG_TYPE_ACK, 0, ack_buf, 8);
 
 sendto(serv.sock_server_send, ack_buf, 8, 0, (struct sockaddr *)&sender, sizeof(struct sockaddr_in));
 
-
-
 }
-
 }
 
 	sock_status_recv = shutdown(serv.sock_server_recv,2);
