@@ -19,7 +19,7 @@ int main(int argc, char *argv[])
 	struct sockaddr_in server,sender;
 	socklen_t len;
 	char ack_buf[8];
-
+	float drop_pkt;
 	int sock_status_recv;
 	char buf[BUFFER_SIZE];
 	
@@ -28,7 +28,9 @@ int main(int argc, char *argv[])
 	char from[INET_ADDRSTRLEN];
 	FILE *fp;
 
+srand(time(0));
 	
+
 
 	if(argc!=5) {
 		usage();
@@ -91,27 +93,48 @@ printf("WAITING FOR DATA: \n");
 
 	printf("Seq number got is %d \n",seq_num);
 
-
-if(seq_num==prev_seq_num+1)
+drop_pkt=(rand()%1000)/1000.0;
+printf("%f is the DROP rate\n",drop_pkt);
+if(seq_num==prev_seq_num+1&& drop_pkt<serv.p)
 {
 
 printf("TRYING TO WRITE TO FILE \n");
 fwrite(buf+HEADER_SIZE,ret-HEADER_SIZE,1,fp);
+fflush(fp);
 printf("%s",buf);
-//sendack(seq_num,serv,sender,len);
 
+pack_data(seq_num, MSG_TYPE_ACK, 0, ack_buf, 8);//CREATE THE ACK
 
-pack_data(seq_num, MSG_TYPE_ACK, 0, ack_buf, 8);
+/*
+check the to_buffer[] struct array repeatedly for any packet that is buffered and has seq_num = cur_seq_num+1;
+if (present) remove that by setting filled=0 
+and write that contents to file
+and set seq_num=seq_num of the packet that was just written
+*/
 
-
-sendto(serv.sock_server_recv, ack_buf, 8, 0, (struct sockaddr*)&sender, sizeof(sender));
+sendto(serv.sock_server_recv, ack_buf, 8, 0, (struct sockaddr*)&sender, sizeof(sender));//SEND THE ACK
 prev_seq_num=seq_num;
 }
 
-else
+else if(drop_pkt>serv.p)
+{
+printf("DROPPED PACKET:::: \n");
+}
+
+else{
+
 printf("Out of ORDER PACKET : \n ");
+/* Have to bufer the packet if there is space available in the buffer
+ let to_buffer[] be the struct array
+find the slot where filled=0
+push the packet into that slot and set filled=1 
+come out of loop
+if there is no slot then it means window buffer is full. DROP PACKET
+ack(last seq_num); 
+*/
 
 
+}
 
 }
 
@@ -126,49 +149,3 @@ printf("Out of ORDER PACKET : \n ");
 
 
 
-
-
-
-
-
-
-/*
-
-int sendack(int seq_num,struct p2mb_sb serv ,struct sockadd_in sender,socklen_t len)
-{
-
-char ack_buf[8];
-
-pack_data(seq_num, MSG_TYPE_ACK, 0, ack_buf, 8);
-
-	if((serv.sock_server_send = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP)) == -1) {
-		die("Server ACK Socket creation failed",errno);
-		return errno;
-	}
-	
-
-	if(bind(serv.sock_server_send, (struct sockaddr*)&serv.server, sizeof(serv.server)) == -1) {
-		close(serv.sock_server_send);
-		die("Server ACK bind failed",errno);
-		return errno;
-	}
-
-sendto(serv.sock_server_send, ack_buf, 8, 0, (struct sockaddr *)&sender, sizeof(struct sockaddr_in));
-
-
-
-
-
-}
-
-
-int get_prob()
-{
-int rand_val;
-
-rand_val=(rand()%1000)/1000
-
-return rand_val;
-
-}
-*/

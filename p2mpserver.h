@@ -21,7 +21,7 @@ typedef struct rev_window {
 } rev_window;
 
 typedef struct p2mp_sb {
-	int p;
+	float p;
 	int N;
 	int sock_server_recv;
 	char filename[FILE_NSIZE];
