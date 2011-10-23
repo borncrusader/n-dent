@@ -7,17 +7,24 @@ void* sender(void *args) {
   node *node_ptr = NULL;
   unsigned int seq_num = 0;
   int ret, i;
+  char ch;
 
   while(looper) {
 
     if(pcb->win.data_available) {
-      printf("server : data available!\n");
+      printf("server : Data available!\n");
       pthread_mutex_lock(&(pcb->win.win_lck));
       node_ptr = pcb->win.to_send;
       while(node_ptr != NULL && node_ptr->filled == 1) {
         node_ptr->seq_num = seq_num;
 
         pack_data(seq_num, MSG_TYPE_DATA, node_ptr->flags, node_ptr->buf, node_ptr->buf_size);
+
+        /*i=0;
+        while(i<node_ptr->buf_size) {
+          ch = node_ptr->buf[i++];
+          printf("%c", ch);
+        }*/
 
         for(i=0;i<pcb->num_recv;i++) {
           printf("sending packet:%d to receiver:%d\n", seq_num, i);

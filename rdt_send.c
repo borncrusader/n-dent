@@ -73,9 +73,11 @@ void* rdt_send(void *args) {
       looper = 0;
     }
 
-    printf("rdt_send: %d read from file..\n", buf_size);
+    printf("rdt_send : %d read from file..\n", buf_size);
  
     pthread_mutex_lock(&(pcb->win.win_lck));
+
+    printf("rdt_send : Num of empty nodes in window : %d\n", pcb->win.num_empty);
  
     if(pcb->win.num_empty > 0) {
 
@@ -93,7 +95,6 @@ void* rdt_send(void *args) {
       --(pcb->win.num_empty);
 
       pcb->win.data_available = 1;
-      printf("rdt_send : data available!\n");
     }
     else {
       if(fseek(fp, -buf_size, SEEK_CUR) == -1) {

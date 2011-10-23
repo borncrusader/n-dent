@@ -15,6 +15,8 @@ void* receiver(void *args) {
 
   p2mp_pcb *pcb = (p2mp_pcb *)args;
 
+  len = sizeof(ser);
+
   printf("receiver: waiting for acks..\n");
 
   while(looper) {
@@ -32,12 +34,12 @@ void* receiver(void *args) {
       continue;
     }
 
-    printf("receiver: Received msg from %s\n", from);
-
     if(unpack_data(&seq_num, &type, &flags, buf, ret) == -1) {
       warn("receiver: Checksum error", 0);
       continue;
     }
+
+    printf("receiver: Received msg from %s with seq_num %d len %d\n", from, seq_num, ret);
 
     if(type != MSG_TYPE_ACK) {
       warn("receiver: received a dubious packet", 0);
@@ -46,7 +48,8 @@ void* receiver(void *args) {
 
     pos = 0;
     while(pos < pcb->num_recv) {
-      if(pcb->recv[pos].sin_addr.s_addr == ser.sin_addr.s_addr) {
+      if(pcb->recv[pos].sin_addr.s_addr == ser.sin_addr.s_addr && 
+          pcb->recv[pos].sin_port == ser.sin_port) {
         ser_pos = pos;
         break;
       }
