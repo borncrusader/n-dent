@@ -108,7 +108,8 @@ int main(int argc, char *argv[])
       fwrite(buf+HEADER_SIZE,ret-HEADER_SIZE,1,fp);
       fflush(fp);
       prev_seq_num=seq_num;
-
+      if(flags&&FLAG_EOM==1)
+	run_flag=0;
       /*
          check the to_buffer[] struct array repeatedly for any packet that is buffered and has seq_num = cur_seq_num+1;
          if (present) remove that by setting filled=0 
@@ -127,6 +128,8 @@ int main(int argc, char *argv[])
             buf_data[i].filled=0;
             prev_seq_num=buf_data[i].seqnum;
             printf("WRITTEN PACKET WITH SEQ NUM %d\n",prev_seq_num);
+		if(flags&&FLAG_EOM==1)
+			run_flag=0;	
 
           }
 
