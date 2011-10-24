@@ -73,7 +73,10 @@ void* receiver(void *args) {
       dup_ack[ser_pos]++;
       if(dup_ack[ser_pos] >= 2) {
 
+        printf("receiver: Num of dup_acks : %d for seq_num : %d\n", dup_ack[ser_pos], seq_num);
+
         for(pos = 0 ; pos < pcb->num_recv ; ++pos) {
+          printf("receiver: head_seq_num : %d acks[pos] : %d\n", node_ptr->seq_num, node_ptr->acks[pos]);
           if(node_ptr->acks[pos] == 0) {
             sendto(pcb->sockfd,
                 node_ptr->buf,
@@ -87,30 +90,31 @@ void* receiver(void *args) {
       }
     }
 
-    while(node_ptr) {
+    diff_seq_num = seq_num - pcb->win.head->seq_num;
 
-      if(node_ptr->seq_num <= seq_num) {
-        ++(node_ptr->acks[ser_pos]);
-        if(node_ptr->acks[ser_pos] > 2) {
-          // Fast Retransmit code
-          // Resend next packet to all servers from which we have not received ACK
-          for(pos = 0 ; pos < pcb->num_recv ; ++pos) {
-            if(node_ptr->next->acks[pos] == 0) {
+    node_ptr = pcb->win.head;
+    while(node_ptr && diff_seq_num >= 0) {
 
-              sendto(pcb->sockfd,
-                  node_ptr->next->buf,
-                  node_ptr->next->buf_size,
-                  0,
-                  (struct sockaddr *)&(pcb->recv[pos]),
-                  sizeof(pcb->recv[pos]));
-            }
+      ++(node_ptr->acks[ser_pos]);
+      if(node_ptr->acks[ser_pos] > 2) {
+        // Fast Retransmit code
+        // Resend next packet to all servers from which we have not received ACK
+        for(pos = 0 ; pos < pcb->num_recv ; ++pos) {
+          if(node_ptr->next->acks[pos] == 0) {
+
+            printf("receiver: Fast Retransmit of seq_num %d to %d\n", node_ptr->seq_num, pos);
+
+            sendto(pcb->sockfd,
+                node_ptr->next->buf,
+                node_ptr->next->buf_size,
+                0,
+                (struct sockaddr *)&(pcb->recv[pos]),
+                sizeof(pcb->recv[pos]));
           }
         }
       }
-      else {
-        break;
-      }
       node_ptr = node_ptr->next;
+      diff_seq_num--;
     }
 
     diff_seq_num = seq_num - pcb->win.head->seq_num;
