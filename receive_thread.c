@@ -3,7 +3,7 @@
 
 void* receiver(void *args) {
   int ret = 0, seq_num = 0, type = 0, flags = 0;
-  int pos = 0, ser_pos = 0, brk = 0;
+  int pos = 0, ser_pos = 0, brk = 0, diff_seq_num = 0;
   int dup_ack[MAX_RECV];
   char buf[BUFFER_SIZE];
   char from[INET_ADDRSTRLEN];
@@ -113,33 +113,38 @@ void* receiver(void *args) {
       node_ptr = node_ptr->next;
     }
 
-    if(pcb->win.head->seq_num <= seq_num) {
-      brk = 0;
-      node_ptr = pcb->win.head;
-      while(node_ptr) {
-        for(pos = 0; pos<pcb->num_recv; pos++) {
-          if(node_ptr->acks[pos] == 0) {
-            brk = 1;
-            break;
-          }
-        }
-        if(brk == 1) {
+    diff_seq_num = seq_num - pcb->win.head->seq_num;
+
+    brk = 0;
+    node_ptr = pcb->win.head;
+    while(node_ptr && diff_seq_num >= 0) {
+      printf("receiver: node_seq_num:%d recv_seq_num:%d\n", node_ptr->seq_num, seq_num);
+      for(pos = 0; pos<pcb->num_recv; pos++) {
+        if(node_ptr->acks[pos] == 0) {
+          brk = 1;
           break;
         }
-
-        if(node_ptr == pcb->win.head) {
-          timer_stop();
-        }
-        P2MP_ZERO(node_ptr->acks);
-        P2MP_ZERO(dup_ack);
-        node_temp = node_ptr->next;
-        node_ptr->next = NULL;
-        pcb->win.tail->next = node_ptr;
-        pcb->win.tail = node_ptr;
-        pcb->win.head = node_temp;
-        node_ptr = pcb->win.head;
-        (pcb->win.num_empty)++;
       }
+      if(brk == 1) {
+        break;
+      }
+
+      if(node_ptr == pcb->win.head) {
+        timer_stop();
+      }
+
+      node_temp = node_ptr->next;
+
+      P2MP_ZERO_ADDR(node_ptr, struct node);
+      P2MP_ZERO(dup_ack);
+
+      pcb->win.tail->next = node_ptr;
+      pcb->win.tail = node_ptr;
+      pcb->win.head = node_temp;
+      node_ptr = pcb->win.head;
+      printf("receiver: Num of empty nodes in window : %d\n", pcb->win.num_empty);
+      (pcb->win.num_empty)++;
+      diff_seq_num--;
     }
 
     pthread_mutex_unlock(&(pcb->win.win_lck));

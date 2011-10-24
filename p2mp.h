@@ -48,6 +48,9 @@
 #define P2MP_ZERO(p) \
   memset(&(p), 0, sizeof(p))
 
+#define P2MP_ZERO_ADDR(p, q) \
+  memset((p), 0, sizeof(q))
+
 #define DATA_SIZE (BUFFER_SIZE-HEADER_SIZE)
 
 #define INITIALISE_STAT(_s) \
