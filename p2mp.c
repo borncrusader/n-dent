@@ -38,7 +38,7 @@ int pack_data(int seq_num, int type, int flags, unsigned char *buf, int size)
 
   compute_checksum(&csum, buf, size);
 
-  printf("computed : %x\n", csum);
+  //printf("computed : %x\n", csum);
 
   buf[4] = (csum & 0xff00)>>8;
   buf[5] = (csum & 0x00ff);
@@ -71,7 +71,7 @@ int unpack_data(int *seq_num, int *type, int *flags, unsigned char *buf, int siz
 
   compute_checksum(&comp_csum, buf, size);
 
-  printf("computed : %x, from_data : %x\n", comp_csum, msg_csum);
+  //printf("computed : %x, from_data : %x\n", comp_csum, msg_csum);
 
   //printf("header\n|%02x%02x %02x %02x|\n|%02x%02x|%02x|%02x|\n",
   //       buf[0],buf[1],buf[2],buf[3],buf[4],buf[5],buf[6],buf[7]);
@@ -109,4 +109,3 @@ void compute_checksum(uint16_t *csum, unsigned char *buf, int size)
 
   return;
 }
-
