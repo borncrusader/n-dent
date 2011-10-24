@@ -92,6 +92,10 @@ printf("WAITING FOR DATA: \n");
       warn("receiver: Checksum error", 0);
       continue;
     }
+/*
+printf("Enter the seq_num: ;) ");
+scanf("%d",&seq_num);
+*/
 
 	printf("Seq number got is %d from %s \n",seq_num,from);
 
@@ -124,6 +128,8 @@ printf("WAITING FOR DATA: \n");
                         fflush(fp);
                         buf_data[i].filled=0;
                         prev_seq_num=buf_data[i].seqnum;
+			printf("WRITTEN PACKET WITH SEQ NUM %d\n",prev_seq_num);
+
                         }
                                                       
                         if(buf_data[i].seqnum==prev_seq_num+1)
@@ -137,11 +143,8 @@ printf("WAITING FOR DATA: \n");
 
         
 
-
-
-  
         pack_data(prev_seq_num, MSG_TYPE_ACK, 0, ack_buf, 8);//CREATE THE ACK
-        printf("Sending ACK FOR %d\n",seq_num);
+        printf("Sending ACK FOR %d\n",prev_seq_num);
         sendto(serv.sock_server_recv, ack_buf, 8, 0, (struct sockaddr*)&sender, sizeof(sender));//SEND THE ACK
 //        prev_seq_num=seq_num;
         }
@@ -166,14 +169,13 @@ printf("WAITING FOR DATA: \n");
                 for(i=0;i<serv.N;i++)
                 {
                 if(buf_data[i].filled==0)
-                fill_here=i;
-
-                break;
+                {fill_here=i;
+                break;}
                 }
 
            if(fill_here==-1)
             {
-             printf("OOPs Buffer full cannot save packet. Dropping it ");
+             printf("OOPs Buffer full cannot save packet. Dropping it \n\n");
             }
         
         strcpy(buf_data[fill_here].buf,buf);
@@ -182,11 +184,12 @@ printf("WAITING FOR DATA: \n");
         
         if(fill_here!=-1)
                {
+                printf("Packet Saved: Now Acking \n");
                 pack_data(prev_seq_num, MSG_TYPE_ACK, 0, ack_buf, 8);//CREATE THE ACK
                 printf("Sending ACK FOR %d\n",prev_seq_num);
                 sendto(serv.sock_server_recv, ack_buf, 8, 0, (struct sockaddr*)&sender, sizeof(sender));//SEND THE prev ACK
                 }        
-        
+        printf("\n");
         }
 
 
