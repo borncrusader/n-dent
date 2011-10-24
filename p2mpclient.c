@@ -18,7 +18,6 @@ int main(int argc, char *argv[])
   char *cfg_file = NULL;
 
   struct sigevent sev;
-  union sigval sigarg;
 
   p2mp_pcb pcb;
 
@@ -64,8 +63,8 @@ int main(int argc, char *argv[])
   // Setup timer
   sev.sigev_notify = SIGEV_THREAD;
   sev.sigev_notify_function = (void*)timer;
-
-  sigarg.sival_ptr = (void*)&pcb;
+  sev.sigev_notify_attributes = NULL;
+  sev.sigev_value.sival_ptr = (void*)&pcb;
 
   if(timer_create(CLOCK_REALTIME, &sev, &pcb.timerid) == -1) {
     printf("MAIN : timer_create failed!\n");
