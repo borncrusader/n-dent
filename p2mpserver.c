@@ -4,10 +4,10 @@
 void usage() {
 	printf("Please specify all the arguments\n");
         printf("p2mpserver port# file-name N p\n");
-        printf("port# - Port number to which the server is listening\n");
-        printf("file-name - File where the data will be written\n");
-        printf("N - Window size\n");
-        printf("p - Probability of packet loss, ranges between 0 and 1\n");
+        printf("           port# - Port number to which the server is listening\n");
+        printf("           file-name - File where the data will be written\n");
+        printf("           N - Window size\n");
+        printf("           p - Probability of packet loss, ranges between 0 and 1\n");
         exit(1);
 }
 
@@ -73,7 +73,7 @@ while(run_flag)
 printf("WAITING FOR DATA: \n");
    ret = recvfrom(serv.sock_server_recv, buf, BUFFER_SIZE, 0, (struct sockaddr*)&sender, &len);
 
-    inet_ntop(AF_INET, &sender, from, INET_ADDRSTRLEN);
+    inet_ntop(AF_INET, &(sender.sin_addr), from, INET_ADDRSTRLEN);
     from[INET_ADDRSTRLEN-1] = '\0';
 
     if(ret == 0) { 
