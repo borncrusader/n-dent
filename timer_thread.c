@@ -12,6 +12,8 @@ void* timer(void *args)
 
     while(!timer_expired);
 
+    printf("\ntimer : Timed Out. Resending head node\n");
+
     pthread_mutex_lock(&(pcb->win.win_lck));
     if(pcb->win.head->filled) {
       for(pos=0; pos<pcb->num_recv; pos++) {
