@@ -6,7 +6,7 @@ void* sender(void *args) {
   int ret = 0, i = 0, looper = 1;
   unsigned int seq_num = 0;
 
-  struct itimerspec its;
+  struct itimerspec its, now;
 
   p2mp_pcb *pcb = (p2mp_pcb*)args;
   node *node_ptr = NULL;
@@ -17,6 +17,9 @@ void* sender(void *args) {
   its.it_interval.tv_nsec = 0;
 
   while(looper) {
+
+    timer_gettime(pcb->timerid, &now);
+    printf("current timer value %ld %ld %ld %ld\n", now.it_value.tv_sec, now.it_value.tv_nsec, now.it_interval.tv_sec, now.it_interval.tv_nsec);
 
     if(pcb->win.data_available) {
       pthread_mutex_lock(&(pcb->win.win_lck));
@@ -45,6 +48,7 @@ void* sender(void *args) {
 
         // start the timer
         if(node_ptr->seq_num == pcb->win.head->seq_num) {
+          printf("SENDER : Starting timer for head packet\n");
           timer_settime(pcb->timerid, 0, &its, NULL);
         }
         seq_num++;

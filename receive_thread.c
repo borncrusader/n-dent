@@ -62,7 +62,7 @@ void* receiver(void *args) {
     }
 
     if(pos == pcb->num_recv) {
-      warn("RECEIVER : received packet from unknown server", 0);
+      warn("RECEIVER : Received packet from unknown server", 0);
       continue;
     }
 
@@ -141,6 +141,7 @@ void* receiver(void *args) {
       }
 
       if(node_ptr->seq_num == pcb->win.head->seq_num) {
+        printf("RECEIVER : Resetting timer\n");
         timer_settime(pcb->timerid, 0, &its, NULL);
       }
 

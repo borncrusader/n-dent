@@ -73,7 +73,6 @@ int main(int argc, char *argv[])
   pthread_create(&(pcb.buf_mgr), NULL, rdt_send, &pcb);
   pthread_create(&(pcb.sender), NULL, sender, &pcb);
   pthread_create(&(pcb.receiver), NULL, receiver, &pcb);
-  pthread_create(&(pcb.timer), NULL, timer, &pcb);
 
   pthread_join(pcb.buf_mgr, NULL);
   pthread_join(pcb.sender, NULL);
