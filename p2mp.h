@@ -3,8 +3,10 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <unistd.h>
 #include <string.h>
 #include <signal.h>
+#include <time.h>
 #include <stdint.h>
 #include <math.h>
 #include <errno.h>

@@ -48,6 +48,7 @@ typedef struct {
   struct sockaddr_in recv[MAX_RECV];  // receivers
   stats cli_stats;                    // Stats structure
   window win;                         // window
+  timer_t timerid;                    // Timer identifier
   pthread_t sender;                   // thread id of the send thread
   pthread_t receiver;                 // thread id of the receive thread
   pthread_t buf_mgr;                  // thread id of the buffer manager

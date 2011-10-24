@@ -17,6 +17,9 @@ int main(int argc, char *argv[])
   int i, st = 0;
   char *cfg_file = NULL;
 
+  struct sigevent sev;
+  union sigval sigarg;
+
   p2mp_pcb pcb;
 
   if(argc==1) {
@@ -55,7 +58,18 @@ int main(int argc, char *argv[])
 
   pcb.win.num_empty = pcb.N;
 
+  // Setup socket
   pcb.sockfd = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
+
+  // Setup timer
+  sev.sigev_notify = SIGEV_THREAD;
+  sev.sigev_notify_function = (void*)timer;
+
+  sigarg.sival_ptr = (void*)&pcb;
+
+  if(timer_create(CLOCK_REALTIME, &sev, &pcb.timerid) == -1) {
+    printf("MAIN : timer_create failed!\n");
+  }
 
   pthread_create(&(pcb.buf_mgr), NULL, rdt_send, &pcb);
   pthread_create(&(pcb.sender), NULL, sender, &pcb);

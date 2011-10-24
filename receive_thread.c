@@ -9,15 +9,22 @@ void* receiver(void *args) {
   char from[INET_ADDRSTRLEN];
   struct sockaddr_in ser;
   unsigned char looper = 1;
-  node *node_ptr = NULL;
-  node *node_temp = NULL;
+  node *node_ptr, *node_temp;
   socklen_t len;
+
+  struct itimerspec its;
 
   p2mp_pcb *pcb = (p2mp_pcb *)args;
 
   len = sizeof(ser);
 
+  its.it_value.tv_sec = ACK_TIMEOUT;
+  its.it_value.tv_nsec = 0;
+  its.it_interval.tv_sec = 0;
+  its.it_interval.tv_nsec = 0;
+
   while(looper) {
+
     ret = recvfrom(pcb->sockfd, buf, BUFFER_SIZE, 0, (struct sockaddr*)&ser, &len);
 
     inet_ntop(AF_INET, &(ser.sin_addr), from, INET_ADDRSTRLEN);
@@ -133,8 +140,8 @@ void* receiver(void *args) {
         break;
       }
 
-      if(node_ptr == pcb->win.head) {
-        timer_stop();
+      if(node_ptr->seq_num == pcb->win.head->seq_num) {
+        timer_settime(pcb->timerid, 0, &its, NULL);
       }
 
       node_temp = node_ptr->next;
