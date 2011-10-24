@@ -17,34 +17,32 @@ void* receiver(void *args) {
 
   len = sizeof(ser);
 
-  printf("receiver: waiting for acks..\n");
-
   while(looper) {
     ret = recvfrom(pcb->sockfd, buf, BUFFER_SIZE, 0, (struct sockaddr*)&ser, &len);
 
-    inet_ntop(AF_INET, &ser, from, INET_ADDRSTRLEN);
+    inet_ntop(AF_INET, &(ser.sin_addr), from, INET_ADDRSTRLEN);
     from[INET_ADDRSTRLEN-1] = '\0';
 
     if(ret == 0) { // Will this return value ever come ???
-      warn("receiver: received a 0 return value : ", errno);
+      warn("RECEIVER : Received a 0 return value : ", errno);
       // Code to remove the receiver from the p2mp_pcb structure
       continue;
     } else if(ret == -1) {
-      warn("receiver: recvfrom() error : ", errno);
+      warn("RECEIVER : recvfrom() error : ", errno);
       continue;
     }
 
     if(unpack_data(&seq_num, &type, &flags, buf, ret) == -1) {
-      warn("receiver: Checksum error", 0);
+      warn("RECEIVER : Checksum error", 0);
       continue;
     }
-
-    printf("receiver: Received msg from %s with seq_num %d len %d\n", from, seq_num, ret);
 
     if(type != MSG_TYPE_ACK) {
-      warn("receiver: received a dubious packet", 0);
+      warn("RECEIVER : Received a dubious packet", 0);
       continue;
     }
+
+    printf("RECEIVER : Received ACK from %s for seq_num %d\n", from, seq_num);
 
     pos = 0;
     while(pos < pcb->num_recv) {
@@ -57,7 +55,7 @@ void* receiver(void *args) {
     }
 
     if(pos == pcb->num_recv) {
-      warn("receiver: received packet from unknown server", 0);
+      warn("RECEIVER : received packet from unknown server", 0);
       continue;
     }
 
@@ -73,11 +71,14 @@ void* receiver(void *args) {
       dup_ack[ser_pos]++;
       if(dup_ack[ser_pos] >= 2) {
 
-        printf("receiver: Num of dup_acks : %d for seq_num : %d\n", dup_ack[ser_pos], seq_num);
+        // Fast Retransmit code flow
+        printf("RECEIVER : Num of dup_acks : %d for seq_num : %d\n", dup_ack[ser_pos], seq_num);
 
         for(pos = 0 ; pos < pcb->num_recv ; ++pos) {
-          printf("receiver: head_seq_num : %d acks[pos] : %d\n", node_ptr->seq_num, node_ptr->acks[pos]);
           if(node_ptr->acks[pos] == 0) {
+
+            printf("RECEIVER : Fast Retransmit of seq_num : %d to %s\n", node_ptr->seq_num, inet_ntoa(pcb->recv[pos].sin_addr));
+
             sendto(pcb->sockfd,
                 node_ptr->buf,
                 node_ptr->buf_size,
@@ -102,7 +103,7 @@ void* receiver(void *args) {
         for(pos = 0 ; pos < pcb->num_recv ; ++pos) {
           if(node_ptr->next->acks[pos] == 0) {
 
-            printf("receiver: Fast Retransmit of seq_num %d to %d\n", node_ptr->seq_num, pos);
+            printf("RECEIVER : Fast Retransmit of seq_num : %d to %s\n", node_ptr->seq_num, inet_ntoa(pcb->recv[pos].sin_addr));
 
             sendto(pcb->sockfd,
                 node_ptr->next->buf,
@@ -122,7 +123,6 @@ void* receiver(void *args) {
     brk = 0;
     node_ptr = pcb->win.head;
     while(node_ptr && diff_seq_num >= 0) {
-      printf("receiver: node_seq_num:%d recv_seq_num:%d\n", node_ptr->seq_num, seq_num);
       for(pos = 0; pos<pcb->num_recv; pos++) {
         if(node_ptr->acks[pos] == 0) {
           brk = 1;
@@ -146,9 +146,11 @@ void* receiver(void *args) {
       pcb->win.tail = node_ptr;
       pcb->win.head = node_temp;
       node_ptr = pcb->win.head;
-      printf("receiver: Num of empty nodes in window : %d\n", pcb->win.num_empty);
       (pcb->win.num_empty)++;
       diff_seq_num--;
+
+      printf("RECEIVER : Num of empty nodes in window : %d\n", pcb->win.num_empty);
+
     }
 
     pthread_mutex_unlock(&(pcb->win.win_lck));

@@ -11,7 +11,7 @@ void buffer_init(p2mp_pcb *pcb) {
 
     node_ptr = (node*)malloc(sizeof(node));
     if(node_ptr == NULL) {
-      die("buffer_init: malloc failed! : ", errno);
+      die("BUFFER_INIT : malloc failed! : ", errno);
     }
 
     node_ptr->filled = 0;
@@ -49,7 +49,7 @@ void* rdt_send(void *args) {
 
   fp = fopen(pcb->filename, "rb");
   if(fp == NULL) {
-    die("rdt_send : file cannot be opened! : ", errno);
+    die("RDT_SEND : File cannot be opened! : ", errno);
   }
 
   while(looper) {
@@ -60,7 +60,7 @@ void* rdt_send(void *args) {
     buf_size = fread(buf, 1, pcb->mss, fp);
     if(ferror(fp)) {
       fclose(fp);
-      die("rdt_send: file i/o error: ", errno);
+      die("RDT_SEND : File i/o error: ", errno);
     }
 
     // peek and unpeek last character
@@ -68,17 +68,15 @@ void* rdt_send(void *args) {
     ungetc(c,fp);
 
     if (c == -1) {
-      printf("rdt_send : EOM reached!\n");
+      printf("RDT_SEND : EOM reached!\n");
       flags = FLAG_EOM;
       looper = 0;
     }
 
-    printf("rdt_send : %d read from file..\n", buf_size);
+    printf("RDT_SEND : %d read from file..\n", buf_size);
  
     pthread_mutex_lock(&(pcb->win.win_lck));
 
-    printf("rdt_send : Num of empty nodes in window : %d\n", pcb->win.num_empty);
- 
     if(pcb->win.num_empty > 0) {
 
       node_ptr = pcb->win.head;
@@ -98,13 +96,16 @@ void* rdt_send(void *args) {
     }
     else {
       if(fseek(fp, -buf_size, SEEK_CUR) == -1) {
-        die("rdt_send : fseek failed! : ", errno);
+        die("RDT_SEND : fseek failed! : ", errno);
       }
-      printf("rdt_send : fseek'ing back\n");
+      printf("RDT_SEND : fseek'ing back\n");
     }
+
+    printf("RDT_SEND : Num of empty nodes in window : %d\n", pcb->win.num_empty);
 
     pthread_mutex_unlock(&(pcb->win.win_lck));
     sleep(BUF_TIMEOUT);
+ 
   }
 
   fclose(fp);

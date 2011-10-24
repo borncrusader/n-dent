@@ -12,7 +12,6 @@ void* sender(void *args) {
   while(looper) {
 
     if(pcb->win.data_available) {
-      printf("server : Data available!\n");
       pthread_mutex_lock(&(pcb->win.win_lck));
       node_ptr = pcb->win.to_send;
       while(node_ptr != NULL && node_ptr->filled == 1) {
@@ -27,7 +26,7 @@ void* sender(void *args) {
         }*/
 
         for(i=0;i<pcb->num_recv;i++) {
-          printf("sending packet:%d to receiver:%d\n", seq_num, i);
+          printf("SENDER : Sending packet:%d to receiver:%d\n", seq_num, i);
           ret = sendto(pcb->sockfd,
                        node_ptr->buf,
                        node_ptr->buf_size,
@@ -35,11 +34,11 @@ void* sender(void *args) {
                        (struct sockaddr*)(&(pcb->recv[i])),
                        sizeof(struct sockaddr_in));
           if(ret==-1) {
-            warn("sender: sento() failed! : ", errno);
+            warn("SENDER : sento() failed! : ", errno);
           }
         }
         if(node_ptr->flags & FLAG_EOM) {
-          printf("sender : EOM reached!\n");
+          printf("SENDER : EOM reached!\n");
           looper = 0;
         }
 
@@ -55,7 +54,7 @@ void* sender(void *args) {
       pcb->win.data_available = 0;
       pthread_mutex_unlock(&(pcb->win.win_lck));
     } else {
-      printf("server : waiting for data!\n");
+      printf("SENDER : Waiting for data!\n");
       sleep(1);
     }
   }
