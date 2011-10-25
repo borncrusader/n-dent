@@ -25,7 +25,7 @@ int main(int argc, char *argv[])
   struct node buf_data[atoi(argv[3])];
   int fill_here,i;
 
-  int ret = 0, seq_num = 0, type = 0, run_flag = 1,flags=0,prev_seq_num=-1,next_there=0;
+  int ret = 0, seq_num = 0, type = 0, run_flag = 1,flags=0,prev_seq_num=-1,next_there=0, last_seq_num = -1;
 
   char from[INET_ADDRSTRLEN];
   FILE *fp;
@@ -105,11 +105,12 @@ int main(int argc, char *argv[])
     {
 
       printf("TRYING TO WRITE TO FILE \n");
+      printf("WRITTEN PACKET WITH SEQ NUM %d\n",seq_num);
       fwrite(buf+HEADER_SIZE,ret-HEADER_SIZE,1,fp);
       fflush(fp);
       prev_seq_num=seq_num;
-      if(flags&&FLAG_EOM==1)
-	run_flag=0;
+      if(flags&FLAG_EOM)
+        last_seq_num = seq_num;
       /*
          check the to_buffer[] struct array repeatedly for any packet that is buffered and has seq_num = cur_seq_num+1;
          if (present) remove that by setting filled=0 
@@ -128,8 +129,9 @@ int main(int argc, char *argv[])
             buf_data[i].filled=0;
             prev_seq_num=buf_data[i].seqnum;
             printf("WRITTEN PACKET WITH SEQ NUM %d\n",prev_seq_num);
-		if(flags&&FLAG_EOM==1)
-			run_flag=0;	
+            if(flags&FLAG_EOM)
+              if(prev_seq_num == last_seq_num)
+                run_flag=0;	
 
           }
 
@@ -140,9 +142,6 @@ int main(int argc, char *argv[])
         if(next_there!=1)
           break;
       }
-
-
-
 
       pack_data(prev_seq_num, MSG_TYPE_ACK, 0, ack_buf, 8);//CREATE THE ACK
       printf("Sending ACK FOR %d\n",prev_seq_num);
