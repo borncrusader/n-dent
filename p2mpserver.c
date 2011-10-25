@@ -99,7 +99,7 @@ int main(int argc, char *argv[])
     {
       printf("Received in-sequence packet from %s:%d, sequence number = %d, ",
              from, htons(sender.sin_port), seq_num);
-      printf("writing %d bytes of %d\n", ret-HEADER_SIZE, seq_num);
+      //printf("writing %d bytes of %d\n", ret-HEADER_SIZE, seq_num);
       fwrite(buf+HEADER_SIZE,ret-HEADER_SIZE,1,fp);
       fflush(fp);
       prev_seq_num=seq_num;
@@ -116,8 +116,8 @@ int main(int argc, char *argv[])
         {
           if(buf_data[i].filled==1 && buf_data[i].seqnum==prev_seq_num+1)
           {
-            printf("writing %d bytes of %d\n", buf_data[i].buf_size-HEADER_SIZE, seq_num);
-            printf("writing %d\n", seq_num);
+            //printf("writing %d bytes of %d\n", buf_data[i].buf_size-HEADER_SIZE, seq_num);
+            //printf("writing %d\n", seq_num);
             fwrite(buf_data[i].buf+HEADER_SIZE,buf_data[i].buf_size-HEADER_SIZE,1,fp);
             fflush(fp);
             buf_data[i].filled=0;
