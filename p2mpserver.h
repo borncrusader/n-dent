@@ -33,6 +33,7 @@ typedef struct node {
 	int seqnum;
 	int filled;
 	int ack;
+  int buf_size;
 	char buf[BUFFER_SIZE];
 	struct node *next;
 }node;
