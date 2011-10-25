@@ -1,39 +1,6 @@
 #include "p2mp.h"
 #include "p2mpclient.h"
 
-void buffer_init(p2mp_pcb *pcb) {
-  int i = 0, N = 0;
-  node *node_ptr = NULL, *node_mv = NULL;
-
-  N = pcb->N;
-
-  while(i < N) {
-
-    node_ptr = (node*)malloc(sizeof(node));
-    if(node_ptr == NULL) {
-      die("BUFFER_INIT : malloc failed! : ", errno);
-    }
-
-    node_ptr->filled = 0;
-    node_ptr->next = NULL;
-    P2MP_ZERO(node_ptr->acks);
-
-    if(pcb->win.head == NULL) {
-      pcb->win.head = node_ptr;
-      pcb->win.to_send = node_ptr;
-      pcb->win.tail = node_ptr;
-    }
-    else {
-      node_mv = pcb->win.head;
-      while(node_mv->next != NULL)
-        node_mv = node_mv->next;
-      node_mv->next = node_ptr;
-      pcb->win.tail = node_ptr;
-    }
-    ++i;
-  }
-}
-
 void* rdt_send(void *args) {
   p2mp_pcb *pcb;
   node *node_ptr;
@@ -44,8 +11,6 @@ void* rdt_send(void *args) {
   FILE *fp;
 
   pcb = (p2mp_pcb*)args;
-
-  buffer_init(pcb);
 
   fp = fopen(pcb->filename, "rb");
   if(fp == NULL) {

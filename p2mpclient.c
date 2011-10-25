@@ -12,6 +12,49 @@ void usage()
   exit(1);
 }
 
+void buffer_init(p2mp_pcb *pcb) {
+  int i = 0;
+  node *node_ptr = NULL, *node_mv = NULL;
+
+  while(i < pcb->N) {
+
+    node_ptr = (node*)malloc(sizeof(node));
+    if(node_ptr == NULL) {
+      die("BUFFER_INIT : malloc failed! : ", errno);
+    }
+
+    node_ptr->filled = 0;
+    node_ptr->next = NULL;
+    P2MP_ZERO(node_ptr->acks);
+
+    if(pcb->win.head == NULL) {
+      pcb->win.head = node_ptr;
+      pcb->win.to_send = node_ptr;
+      pcb->win.tail = node_ptr;
+    }
+    else {
+      node_mv = pcb->win.head;
+      while(node_mv->next != NULL)
+        node_mv = node_mv->next;
+      node_mv->next = node_ptr;
+      pcb->win.tail = node_ptr;
+    }
+    ++i;
+  }
+}
+
+void buffer_delete(p2mp_pcb *pcb) {
+
+  node *node_ptr, *node_next;
+
+  node_ptr = pcb->win.head;
+  while(node_ptr) {
+    node_next = node_ptr->next;
+    free(node_ptr);
+    node_ptr = node_next;
+  }
+}
+
 int main(int argc, char *argv[])
 {
   int i, st = 0;
@@ -70,6 +113,8 @@ int main(int argc, char *argv[])
     printf("MAIN : timer_create failed!\n");
   }
 
+  buffer_init(&pcb);
+
   pthread_create(&(pcb.buf_mgr), NULL, rdt_send, &pcb);
   pthread_create(&(pcb.sender), NULL, sender, &pcb);
   pthread_create(&(pcb.receiver), NULL, receiver, &pcb);
@@ -77,6 +122,9 @@ int main(int argc, char *argv[])
   pthread_join(pcb.buf_mgr, NULL);
   pthread_join(pcb.sender, NULL);
   pthread_join(pcb.receiver, NULL);
+
+  close(pcb.sockfd);
+  buffer_delete(&pcb);
 
   return 0;
 }

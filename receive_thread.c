@@ -87,12 +87,16 @@ void* receiver(void *args) {
 
             printf("RECEIVER : Fast Retransmit of seq_num : %d to %s\n", node_ptr->seq_num, inet_ntoa(pcb->recv[pos].sin_addr));
 
-            sendto(pcb->sockfd,
+            ret = sendto(pcb->sockfd,
                 node_ptr->buf,
                 node_ptr->buf_size,
                 0,
                 (struct sockaddr *)&(pcb->recv[pos]),
                 sizeof(pcb->recv[pos]));
+
+            if(ret==-1) {
+              warn("RECEIVER : sento() failed! : ", errno);
+            }
           }
         }
 
@@ -113,12 +117,15 @@ void* receiver(void *args) {
 
             printf("RECEIVER : Fast Retransmit of seq_num : %d to %s\n", node_ptr->seq_num, inet_ntoa(pcb->recv[pos].sin_addr));
 
-            sendto(pcb->sockfd,
-                node_ptr->next->buf,
-                node_ptr->next->buf_size,
-                0,
-                (struct sockaddr *)&(pcb->recv[pos]),
-                sizeof(pcb->recv[pos]));
+            ret = sendto(pcb->sockfd,
+                    node_ptr->next->buf,
+                    node_ptr->next->buf_size,
+                    0,
+                    (struct sockaddr *)&(pcb->recv[pos]),
+                    sizeof(pcb->recv[pos]));
+            if(ret==-1) {
+              warn("SENDER : sento() failed! : ", errno);
+            }
           }
         }
       }
