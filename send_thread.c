@@ -24,9 +24,9 @@ void* sender(void *args) {
     //timer_gettime(pcb->timerid, &now);
     //printf("current timer value %ld %ld %ld %ld\n", now.it_value.tv_sec, now.it_value.tv_nsec, now.it_interval.tv_sec, now.it_interval.tv_nsec);
 
-    if(pcb->win.data_available) {
+    pthread_mutex_lock(&(pcb->win.win_lck));
 
-      pthread_mutex_lock(&(pcb->win.win_lck));
+    if(pcb->win.data_available) {
 
       node_ptr = pcb->win.to_send;
       while(node_ptr != NULL && node_ptr->filled == 1) {
@@ -63,11 +63,11 @@ void* sender(void *args) {
       pcb->win.to_send = node_ptr;
 
       pcb->win.data_available = 0;
-      pthread_mutex_unlock(&(pcb->win.win_lck));
     } else {
       //printf("SENDER : Waiting for data!\n");
       //sleep(1);
     }
+    pthread_mutex_unlock(&(pcb->win.win_lck));
   }
 
   //printf("SENDER : send_thread terminating\n");
