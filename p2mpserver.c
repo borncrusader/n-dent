@@ -97,8 +97,9 @@ int main(int argc, char *argv[])
 
     if(seq_num==prev_seq_num+1)
     {
-      printf("Received in-sequence packet from %s:%d, sequence number = %d\n",
+      printf("Received in-sequence packet from %s:%d, sequence number = %d, ",
              from, htons(sender.sin_port), seq_num);
+      printf("writing %d bytes of %d\n", ret-HEADER_SIZE, seq_num);
       fwrite(buf+HEADER_SIZE,ret-HEADER_SIZE,1,fp);
       fflush(fp);
       prev_seq_num=seq_num;
@@ -115,7 +116,9 @@ int main(int argc, char *argv[])
         {
           if(buf_data[i].filled==1 && buf_data[i].seqnum==prev_seq_num+1)
           {
-            fwrite(buf_data[i].buf+HEADER_SIZE,sizeof(buf_data[i].buf)-HEADER_SIZE,1,fp);
+            printf("writing %d bytes of %d\n", buf_data[i].buf_size-HEADER_SIZE, seq_num);
+            printf("writing %d\n", seq_num);
+            fwrite(buf_data[i].buf+HEADER_SIZE,buf_data[i].buf_size-HEADER_SIZE,1,fp);
             fflush(fp);
             buf_data[i].filled=0;
             prev_seq_num=buf_data[i].seqnum;
@@ -138,7 +141,7 @@ int main(int argc, char *argv[])
       }
     }
     else{
-      printf("Received out-of-sequence packet from %s:%d, sequence number = %d\n",
+      printf("Received out-of-sequence packet from %s:%d, sequence number = %d, ",
              from, htons(sender.sin_port), seq_num);
       /* Have to bufer the packet if there is space available in the buffer
          let to_buffer[] be the struct array
@@ -161,9 +164,10 @@ int main(int argc, char *argv[])
         printf("Oops! The world is going to end! Buffer full cannot save packet. Dropping it!\n\n");
       }
 
-      strcpy(buf_data[fill_here].buf,buf);
+      memcpy(buf_data[fill_here].buf,buf,ret);
       buf_data[fill_here].filled=1;
       buf_data[fill_here].seqnum=seq_num;
+      buf_data[fill_here].buf_size=ret;
 
       if(fill_here!=-1)
       {
