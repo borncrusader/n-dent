@@ -2,6 +2,7 @@
 #include "p2mpclient.h"
 
 void* sender(void *args) {
+
   char ch;
   int ret = 0, i = 0, looper = 1;
   unsigned int seq_num = 0;
@@ -11,6 +12,8 @@ void* sender(void *args) {
   p2mp_pcb *pcb = (p2mp_pcb*)args;
   node *node_ptr = NULL;
 
+  pcb->win.last_seq = -1;
+
   its.it_value.tv_sec = ACK_TIMEOUT;
   its.it_value.tv_nsec = 0;
   its.it_interval.tv_sec = 0;
@@ -18,11 +21,13 @@ void* sender(void *args) {
 
   while(looper) {
 
-    timer_gettime(pcb->timerid, &now);
-    printf("current timer value %ld %ld %ld %ld\n", now.it_value.tv_sec, now.it_value.tv_nsec, now.it_interval.tv_sec, now.it_interval.tv_nsec);
+    //timer_gettime(pcb->timerid, &now);
+    //printf("current timer value %ld %ld %ld %ld\n", now.it_value.tv_sec, now.it_value.tv_nsec, now.it_interval.tv_sec, now.it_interval.tv_nsec);
 
     if(pcb->win.data_available) {
+
       pthread_mutex_lock(&(pcb->win.win_lck));
+
       node_ptr = pcb->win.to_send;
       while(node_ptr != NULL && node_ptr->filled == 1) {
         node_ptr->seq_num = seq_num;
@@ -42,7 +47,9 @@ void* sender(void *args) {
           }
         }
         if(node_ptr->flags & FLAG_EOM) {
+
           printf("SENDER : EOM reached!\n");
+          pcb->win.last_seq = seq_num;
           looper = 0;
         }
 
@@ -64,5 +71,6 @@ void* sender(void *args) {
     }
   }
 
+  printf("SENDER : send_thread terminating\n");
   return;
 }

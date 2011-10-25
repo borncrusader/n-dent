@@ -26,6 +26,7 @@ typedef struct node {
 }node;
 
 typedef struct {
+  int last_seq;                       // Last sequence number of packet
   int num_empty;                      // free nodes in the window
 
   int data_available;                 // the aggregator thread sets this if data is available

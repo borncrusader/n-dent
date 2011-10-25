@@ -1,6 +1,8 @@
 #! /bin/bash
 
+rm transfer.txt
+
 while true
 do
-echo "abcdefghijklmnopqrstuvwxyz" >> transfer.txt
+echo "abcd" >> transfer.txt
 done

@@ -2,6 +2,7 @@
 #include "p2mpclient.h"
 
 void* receiver(void *args) {
+
   int ret = 0, seq_num = 0, type = 0, flags = 0;
   int pos = 0, ser_pos = 0, brk = 0, diff_seq_num = 0;
   int dup_ack[MAX_RECV];
@@ -141,8 +142,13 @@ void* receiver(void *args) {
       }
 
       if(node_ptr->seq_num == pcb->win.head->seq_num) {
-        printf("RECEIVER : Resetting timer\n");
-        timer_settime(pcb->timerid, 0, &its, NULL);
+        if(pcb->win.last_seq == node_ptr->seq_num) {
+          looper = 0;
+        }
+        else {
+          printf("RECEIVER : Resetting timer\n");
+          timer_settime(pcb->timerid, 0, &its, NULL);
+        }
       }
 
       node_temp = node_ptr->next;
@@ -164,5 +170,6 @@ void* receiver(void *args) {
     pthread_mutex_unlock(&(pcb->win.win_lck));
   }
 
+  printf("RECEIVER : receive_thread terminating\n");
   return;
 }
