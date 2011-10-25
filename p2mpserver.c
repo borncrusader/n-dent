@@ -2,12 +2,11 @@
 #include "p2mpserver.h"
 
 void usage() {
-  printf("Please specify all the arguments\n");
   printf("p2mpserver port# file-name N p\n");
-  printf("           port# - Port number to which the server is listening\n");
-  printf("           file-name - File where the data will be written\n");
-  printf("           N - Window size\n");
-  printf("           p - Probability of packet loss, ranges between 0 and 1\n");
+  printf("           port# - port number to which the server is listening\n");
+  printf("           file-name - file where the data will be written\n");
+  printf("           N - window size\n");
+  printf("           p - probability of packet loss, ranges between 0 and 1\n");
   exit(1);
 }
 
@@ -25,7 +24,7 @@ int main(int argc, char *argv[])
   struct node buf_data[atoi(argv[3])];
   int fill_here,i;
 
-  int ret = 0, seq_num = 0, type = 0, run_flag = 1,flags=0,prev_seq_num=-1,next_there=0, last_seq_num = -1;
+  int ret = 0, seq_num = 0, type = 0, flags=0,prev_seq_num=-1,next_there=0, last_seq_num = -1;
 
   char from[INET_ADDRSTRLEN];
   FILE *fp;
@@ -44,8 +43,7 @@ int main(int argc, char *argv[])
   strncpy(serv.filename, argv[2],FILE_NSIZE);
 
   if((serv.sock_server_recv = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP)) == -1) {
-    die("Server Socket creation failed",errno);
-    return errno;
+    die("p2mpserver : socket creation failed!", errno);
   }
 
   server.sin_family = AF_INET;
@@ -54,63 +52,56 @@ int main(int argc, char *argv[])
 
   if(bind(serv.sock_server_recv, (struct sockaddr*)&server, sizeof(server)) == -1) {
     close(serv.sock_server_recv);
-    die("Server bind failed",errno);
-    return errno;
+    die("p2mpserver : bind failed!", errno);
   }
 
 
   fp = fopen(serv.filename, "w");
   if(fp == NULL) {
-    die("SERVER : file cannot be opened! : ", errno);
+    die("p2mpserver : file cannot be opened!", errno);
   }
 
   len=sizeof(sender);
 
-  while(run_flag)
+  while(1)
   {
-    printf("WAITING FOR DATA: \n");
+    flags = 0;
     ret = recvfrom(serv.sock_server_recv, buf, BUFFER_SIZE, 0, (struct sockaddr*)&sender, &len);
+    if(ret == 0) { 
+      warn("p2mpserver: recvfrom() client closed connection!", errno);
+      continue;
+    } else if(ret == -1) {
+      warn("p2mpserver: recvfrom() error!", errno);
+      continue;
+    }
 
     inet_ntop(AF_INET, &(sender.sin_addr), from, INET_ADDRSTRLEN);
     from[INET_ADDRSTRLEN-1] = '\0';
 
-    if(ret == 0) { 
-      warn("receiver: received a 0 return value : ", errno);
-
-      continue;
-    } else if(ret == -1) {
-      warn("receiver: recvfrom() error : ", errno);
-      continue;
-    }
-
-
-    //printf("receiver: Received packet from %s\n", from);
-
     if(unpack_data(&seq_num, &type, &flags, buf, ret) == -1) {
-      warn("receiver: Checksum error", 0);
+      warn("p2mpserver: checksum error!", 0);
       continue;
     }
-    /*
-       printf("Enter the seq_num: ;) ");
-       scanf("%d",&seq_num);
-       */
-
-    printf("Seq number got is %d from %s \n",seq_num,from);
 
     drop_pkt=(rand()%1000)/1000.0;
 
-    printf("%f is the DROP rate\n",drop_pkt);
-
-    if(seq_num==prev_seq_num+1&& drop_pkt>serv.p)
+    if(drop_pkt<serv.p)
     {
+      printf("Packet loss, sequence number = %d\n", seq_num);
+      continue;
+    }
 
-      printf("TRYING TO WRITE TO FILE \n");
-      printf("WRITTEN PACKET WITH SEQ NUM %d\n",seq_num);
+    if(flags&FLAG_EOM) {
+      last_seq_num = seq_num;
+    }
+
+    if(seq_num==prev_seq_num+1)
+    {
+      printf("Received in-sequence packet from %s:%d, sequence number = %d\n",
+             from, htons(sender.sin_port), seq_num);
       fwrite(buf+HEADER_SIZE,ret-HEADER_SIZE,1,fp);
       fflush(fp);
       prev_seq_num=seq_num;
-      if(flags&FLAG_EOM)
-        last_seq_num = seq_num;
       /*
          check the to_buffer[] struct array repeatedly for any packet that is buffered and has seq_num = cur_seq_num+1;
          if (present) remove that by setting filled=0 
@@ -128,11 +119,6 @@ int main(int argc, char *argv[])
             fflush(fp);
             buf_data[i].filled=0;
             prev_seq_num=buf_data[i].seqnum;
-            printf("WRITTEN PACKET WITH SEQ NUM %d\n",prev_seq_num);
-            if(flags&FLAG_EOM)
-              if(prev_seq_num == last_seq_num)
-                run_flag=0;	
-
           }
 
           if(buf_data[i].seqnum==prev_seq_num+1)
@@ -144,19 +130,16 @@ int main(int argc, char *argv[])
       }
 
       pack_data(prev_seq_num, MSG_TYPE_ACK, 0, ack_buf, 8);//CREATE THE ACK
-      printf("Sending ACK FOR %d\n",prev_seq_num);
+      printf("Sending ack for sequence number = %d\n", prev_seq_num);
       sendto(serv.sock_server_recv, ack_buf, 8, 0, (struct sockaddr*)&sender, sizeof(sender));//SEND THE ACK
-      //        prev_seq_num=seq_num;
-    }
 
-    else if(drop_pkt<serv.p)
-    {
-      printf("DROPPED PACKET:::: \n");
+      if(last_seq_num == seq_num) {
+        break;
+      }
     }
-
     else{
-
-      printf("Out of ORDER PACKET : \n ");
+      printf("Received out-of-sequence packet from %s:%d, sequence number = %d\n",
+             from, htons(sender.sin_port), seq_num);
       /* Have to bufer the packet if there is space available in the buffer
          let to_buffer[] be the struct array
          find the slot where filled=0
@@ -175,7 +158,7 @@ int main(int argc, char *argv[])
 
       if(fill_here==-1)
       {
-        printf("OOPs Buffer full cannot save packet. Dropping it \n\n");
+        printf("Oops! The world is going to end! Buffer full cannot save packet. Dropping it!\n\n");
       }
 
       strcpy(buf_data[fill_here].buf,buf);
@@ -184,23 +167,13 @@ int main(int argc, char *argv[])
 
       if(fill_here!=-1)
       {
-        printf("Packet Saved: Now Acking \n");
         pack_data(prev_seq_num, MSG_TYPE_ACK, 0, ack_buf, 8);//CREATE THE ACK
-        printf("Sending ACK FOR %d\n",prev_seq_num);
+        printf("Sending ack for sequence number = %d\n", prev_seq_num);
         sendto(serv.sock_server_recv, ack_buf, 8, 0, (struct sockaddr*)&sender, sizeof(sender));//SEND THE prev ACK
       }        
-      printf("\n");
     }
-
-
-    printf("\n");
-
   }
 
-  sock_status_recv = shutdown(serv.sock_server_recv,2);
-  if(sock_status_recv != 0) {
-    die("Error in socket termination for server: ", errno);
-  }
   close(serv.sock_server_recv);
 
   return 0;
