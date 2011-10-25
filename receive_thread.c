@@ -50,7 +50,7 @@ void* receiver(void *args) {
       continue;
     }
 
-    printf("RECEIVER : Received ACK from %s for seq_num %d\n", from, seq_num);
+    printf("RECEIVER : Received ACK from %s:%d for seq_num %d\n", from, ntohs(ser.sin_port), seq_num);
 
     pos = 0;
     while(pos < pcb->num_recv) {
