@@ -7,6 +7,12 @@ void* timer(void *args)
   struct itimerspec its;
 
   p2mp_pcb *pcb = (p2mp_pcb*)args;
+
+  its.it_value.tv_sec = ACK_TIMEOUT;
+  its.it_value.tv_nsec = 0;
+  its.it_interval.tv_sec = 0;
+  its.it_interval.tv_nsec = 0;
+
   pthread_mutex_lock(&(pcb->win.win_lck));
 
   //printf("TIMER : TIMED OUT\n");
@@ -29,13 +35,7 @@ void* timer(void *args)
     }
   }
 
-  its.it_value.tv_sec = ACK_TIMEOUT;
-  its.it_value.tv_nsec = 0;
-  its.it_interval.tv_sec = 0;
-  its.it_interval.tv_nsec = 0;
-
   timer_settime(pcb->timerid, 0, &its, NULL);
 
   pthread_mutex_unlock(&(pcb->win.win_lck));
-
 }
