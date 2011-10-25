@@ -32,11 +32,11 @@ void* receiver(void *args) {
     from[INET_ADDRSTRLEN-1] = '\0';
 
     if(ret == 0) { // Will this return value ever come ???
-      warn("RECEIVER : Received a 0 return value : ", errno);
+      warn("RECEIVER : Received a 0 return value", errno);
       // Code to remove the receiver from the p2mp_pcb structure
       continue;
     } else if(ret == -1) {
-      warn("RECEIVER : recvfrom() error : ", errno);
+      warn("RECEIVER : recvfrom() error", errno);
       continue;
     }
 
@@ -50,7 +50,7 @@ void* receiver(void *args) {
       continue;
     }
 
-    printf("RECEIVER : Received ACK from %s for seq_num %d\n", from, seq_num);
+    printf("RECEIVER : Received ack from %s:%d, sequence number = %d\n", from, ntohs(ser.sin_port), seq_num);
 
     pos = 0;
     while(pos < pcb->num_recv) {
@@ -80,12 +80,13 @@ void* receiver(void *args) {
       if(dup_ack[ser_pos] >= 2) {
 
         // Fast Retransmit code flow
-        printf("RECEIVER : Num of dup_acks : %d for seq_num : %d\n", dup_ack[ser_pos], seq_num);
+        //printf("RECEIVER : Num of dup_acks : %d for seq_num : %d\n", dup_ack[ser_pos], seq_num);
 
         for(pos = 0 ; pos < pcb->num_recv ; ++pos) {
           if(node_ptr->acks[pos] == 0) {
 
-            printf("RECEIVER : Fast Retransmit of seq_num : %d to %s\n", node_ptr->seq_num, inet_ntoa(pcb->recv[pos].sin_addr));
+            printf("RECEIVER : Fast Retransmit to %s:%d, sequence number = %d\n", inet_ntoa(pcb->recv[pos].sin_addr),
+                   ntohs(pcb->recv[pos].sin_port), node_ptr->seq_num);
 
             ret = sendto(pcb->sockfd,
                 node_ptr->buf,
@@ -95,7 +96,7 @@ void* receiver(void *args) {
                 sizeof(pcb->recv[pos]));
 
             if(ret==-1) {
-              warn("RECEIVER : sento() failed! : ", errno);
+              warn("RECEIVER : sento() failed!", errno);
             }
           }
         }
@@ -115,7 +116,8 @@ void* receiver(void *args) {
         for(pos = 0 ; pos < pcb->num_recv ; ++pos) {
           if(node_ptr->next->acks[pos] == 0) {
 
-            printf("RECEIVER : Fast Retransmit of seq_num : %d to %s\n", node_ptr->seq_num, inet_ntoa(pcb->recv[pos].sin_addr));
+            printf("RECEIVER : Fast Retransmit to %s:%d, sequence number = %d\n", inet_ntoa(pcb->recv[pos].sin_addr),
+                   ntohs(pcb->recv[pos].sin_port), node_ptr->seq_num);
 
             ret = sendto(pcb->sockfd,
                     node_ptr->next->buf,
@@ -124,7 +126,7 @@ void* receiver(void *args) {
                     (struct sockaddr *)&(pcb->recv[pos]),
                     sizeof(pcb->recv[pos]));
             if(ret==-1) {
-              warn("SENDER : sento() failed! : ", errno);
+              warn("RECEIVER : sento() failed!", errno);
             }
           }
         }
@@ -153,7 +155,7 @@ void* receiver(void *args) {
           looper = 0;
         }
         else {
-          printf("RECEIVER : Resetting timer\n");
+          //printf("RECEIVER : Resetting timer\n");
           timer_settime(pcb->timerid, 0, &its, NULL);
         }
       }
@@ -170,13 +172,13 @@ void* receiver(void *args) {
       (pcb->win.num_empty)++;
       diff_seq_num--;
 
-      printf("RECEIVER : Num of empty nodes in window : %d\n", pcb->win.num_empty);
+      //printf("RECEIVER : Num of empty nodes in window : %d\n", pcb->win.num_empty);
 
     }
 
     pthread_mutex_unlock(&(pcb->win.win_lck));
   }
 
-  printf("RECEIVER : receive_thread terminating\n");
+  //printf("RECEIVER : receive_thread terminating\n");
   return;
 }

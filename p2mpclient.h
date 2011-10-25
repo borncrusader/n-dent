@@ -3,8 +3,6 @@
 
 #include "p2mp.h"
 
-extern sig_atomic_t timer_expired;
-
 typedef struct stats {
   unsigned long acks_rcvd[MAX_RECV];     // Number of acks excluding the dup acks
   unsigned long pkts_sent[MAX_RECV];     // Number of pkts sent so far

@@ -14,7 +14,7 @@ void* rdt_send(void *args) {
 
   fp = fopen(pcb->filename, "rb");
   if(fp == NULL) {
-    die("RDT_SEND : File cannot be opened! : ", errno);
+    die("RDT_SEND : File cannot be opened!", errno);
   }
 
   while(looper) {
@@ -25,7 +25,7 @@ void* rdt_send(void *args) {
     buf_size = fread(buf, 1, pcb->mss, fp);
     if(ferror(fp)) {
       fclose(fp);
-      die("RDT_SEND : File i/o error: ", errno);
+      die("RDT_SEND : File i/o error", errno);
     }
 
     // peek and unpeek last character
@@ -33,12 +33,12 @@ void* rdt_send(void *args) {
     ungetc(c,fp);
 
     if (c == -1) {
-      printf("RDT_SEND : EOM reached!\n");
+      //printf("RDT_SEND : EOM reached!\n");
       flags = FLAG_EOM;
       looper = 0;
     }
 
-    printf("RDT_SEND : %d read from file..\n", buf_size);
+    //printf("RDT_SEND : %d read from file..\n", buf_size);
  
     pthread_mutex_lock(&(pcb->win.win_lck));
 
@@ -61,16 +61,15 @@ void* rdt_send(void *args) {
     }
     else {
       if(fseek(fp, -buf_size, SEEK_CUR) == -1) {
-        die("RDT_SEND : fseek failed! : ", errno);
+        die("RDT_SEND : fseek failed!", errno);
       }
-      printf("RDT_SEND : fseek'ing back\n");
+      //printf("RDT_SEND : fseek'ing back\n");
     }
 
-    printf("RDT_SEND : Num of empty nodes in window : %d\n", pcb->win.num_empty);
+    //printf("RDT_SEND : Num of empty nodes in window : %d\n", pcb->win.num_empty);
 
     pthread_mutex_unlock(&(pcb->win.win_lck));
-    sleep(BUF_TIMEOUT);
- 
+    //sleep(BUF_TIMEOUT);
   }
 
   fclose(fp);

@@ -20,7 +20,7 @@ void buffer_init(p2mp_pcb *pcb) {
 
     node_ptr = (node*)malloc(sizeof(node));
     if(node_ptr == NULL) {
-      die("BUFFER_INIT : malloc failed! : ", errno);
+      die("BUFFER_INIT : malloc failed!", errno);
     }
 
     node_ptr->filled = 0;
@@ -110,7 +110,7 @@ int main(int argc, char *argv[])
   sev.sigev_value.sival_ptr = (void*)&pcb;
 
   if(timer_create(CLOCK_REALTIME, &sev, &pcb.timerid) == -1) {
-    printf("MAIN : timer_create failed!\n");
+    die("MAIN : timer_create failed!", 0);
   }
 
   buffer_init(&pcb);

@@ -35,7 +35,7 @@ void* sender(void *args) {
         pack_data(seq_num, MSG_TYPE_DATA, node_ptr->flags, node_ptr->buf, node_ptr->buf_size);
 
         for(i=0;i<pcb->num_recv;i++) {
-          printf("SENDER : Sending packet:%d to receiver:%d\n", seq_num, i);
+          printf("SENDER : Sending packet, sequence number = %d to receiver = %s:%d\n", seq_num, inet_ntoa(pcb->recv[i].sin_addr), ntohs(pcb->recv[i].sin_port));
           ret = sendto(pcb->sockfd,
                        node_ptr->buf,
                        node_ptr->buf_size,
@@ -43,19 +43,18 @@ void* sender(void *args) {
                        (struct sockaddr*)(&(pcb->recv[i])),
                        sizeof(struct sockaddr_in));
           if(ret==-1) {
-            warn("SENDER : sento() failed! : ", errno);
+            warn("SENDER : sento() failed!", errno);
           }
         }
         if(node_ptr->flags & FLAG_EOM) {
-
-          printf("SENDER : EOM reached!\n");
+          //printf("SENDER : EOM reached!\n");
           pcb->win.last_seq = seq_num;
           looper = 0;
         }
 
         // start the timer
         if(node_ptr->seq_num == pcb->win.head->seq_num) {
-          printf("SENDER : Starting timer for head packet\n");
+          //printf("SENDER : Starting timer for head packet\n");
           timer_settime(pcb->timerid, 0, &its, NULL);
         }
         seq_num++;
@@ -66,11 +65,12 @@ void* sender(void *args) {
       pcb->win.data_available = 0;
       pthread_mutex_unlock(&(pcb->win.win_lck));
     } else {
-      printf("SENDER : Waiting for data!\n");
-      sleep(1);
+      //printf("SENDER : Waiting for data!\n");
+      //sleep(1);
     }
   }
 
-  printf("SENDER : send_thread terminating\n");
+  //printf("SENDER : send_thread terminating\n");
+
   return;
 }
