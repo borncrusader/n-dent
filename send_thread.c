@@ -14,8 +14,8 @@ void* sender(void *args) {
 
   pcb->win.last_seq = -1;
 
-  its.it_value.tv_sec = ACK_TIMEOUT;
-  its.it_value.tv_nsec = 0;
+  its.it_value.tv_sec = ACK_SEC;
+  its.it_value.tv_nsec = ACK_NSEC;
   its.it_interval.tv_sec = 0;
   its.it_interval.tv_nsec = 0;
 
