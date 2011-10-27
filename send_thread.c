@@ -60,7 +60,11 @@ void* sender(void *args) {
         seq_num++;
         node_ptr = node_ptr->next;
       }
-      pcb->win.to_send = node_ptr;
+
+      if(node_ptr != NULL)
+        pcb->win.to_send = node_ptr;
+      else
+        pcb->win.to_send = pcb->win.head;
 
       pcb->win.data_available = 0;
     } else {

@@ -33,9 +33,8 @@ void* rdt_send(void *args) {
     ungetc(c,fp);
 
     if (c == -1) {
-      //printf("RDT_SEND : EOM reached!\n");
+      //printf("RDT_SEND : EOM reached buf_size : %d!\n", buf_size);
       flags = FLAG_EOM;
-      looper = 0;
     }
 
     //printf("RDT_SEND : %d read from file..\n", buf_size);
@@ -49,6 +48,8 @@ void* rdt_send(void *args) {
         node_ptr = node_ptr->next;
       }
 
+      //printf("rdt_send : num_empty %d node_ptr %p head %p\n", pcb->win.num_empty, node_ptr, pcb->win.head);
+
       memcpy(node_ptr->buf+HEADER_SIZE, buf, buf_size);
 
       node_ptr->filled = 1;
@@ -58,6 +59,13 @@ void* rdt_send(void *args) {
       --(pcb->win.num_empty);
 
       pcb->win.data_available = 1;
+
+      if(flags & FLAG_EOM) {
+        printf("RDT_SEND : EOM Reached, buf_size : %d\n", buf_size);
+        looper = 0;
+      }
+
+      printf("RDT_SEND : Filling buffer... empty = %d buf_size = %d\n", pcb->win.num_empty, buf_size);
     }
     else {
       if(fseek(fp, -buf_size, SEEK_CUR) == -1) {

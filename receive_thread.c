@@ -114,7 +114,7 @@ void* receiver(void *args) {
         // Fast Retransmit code
         // Resend next packet to all servers from which we have not received ACK
         for(pos = 0 ; pos < pcb->num_recv ; ++pos) {
-          if(node_ptr->next->acks[pos] == 0) {
+          if(node_ptr->next && node_ptr->next->acks[pos] == 0) {
 
             printf("RECEIVER : Fast Retransmit to %s:%d, sequence number = %d\n", inet_ntoa(pcb->recv[pos].sin_addr),
                    ntohs(pcb->recv[pos].sin_port), node_ptr->seq_num);
@@ -172,7 +172,7 @@ void* receiver(void *args) {
       (pcb->win.num_empty)++;
       diff_seq_num--;
 
-      //printf("RECEIVER : Num of empty nodes in window : %d\n", pcb->win.num_empty);
+      printf("RECEIVER : Num of empty nodes in window : %d\n", pcb->win.num_empty);
 
     }
 
