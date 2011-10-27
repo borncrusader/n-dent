@@ -24,7 +24,7 @@ int main(int argc, char *argv[])
   struct node buf_data[atoi(argv[3])];
   int fill_here,i;
 
-  int ret = 0, seq_num = 0, type = 0, flags=0,prev_seq_num=-1,next_there=0, last_seq_num = -1;
+  int ret = 0, seq_num = 0, type = 0, flags=0,prev_seq_num=-1,next_there=0, last_seq_num = -1,run_flag=1;
 
   char from[INET_ADDRSTRLEN];
   FILE *fp;
@@ -63,7 +63,7 @@ int main(int argc, char *argv[])
 
   len=sizeof(sender);
 
-  while(1)
+  while(run_flag)
   {
     flags = 0;
     ret = recvfrom(serv.sock_server_recv, buf, BUFFER_SIZE, 0, (struct sockaddr*)&sender, &len);
@@ -93,7 +93,8 @@ int main(int argc, char *argv[])
 
     if(flags&FLAG_EOM) {
       last_seq_num = seq_num;
-    }
+	        printf("Recieved EOM, sequence number = %d\n", seq_num);
+  }
 
     if(seq_num==prev_seq_num+1)
     {
@@ -137,6 +138,8 @@ int main(int argc, char *argv[])
       sendto(serv.sock_server_recv, ack_buf, 8, 0, (struct sockaddr*)&sender, sizeof(sender));//SEND THE ACK
 
       if(last_seq_num == seq_num) {
+		        printf("Written the last packet, sequence number = %d\n", seq_num);
+			printf("TRANSFER COMPLETE :QUITTING \n");
         break;
       }
     }
