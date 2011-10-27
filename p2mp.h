@@ -37,7 +37,7 @@
 #define MAX_RECV    10                // Maximum number of receivers
 
 #define BUF_TIMEOUT 2                 // buffer aggregator timeout
-#define ACK_TIMEOUT 2                 // timeout value for ack to come
+#define ACK_TIMEOUT 1                 // timeout value for ack to come
 
 #define BUFFER_SIZE 1500              // Maximum segment size of a packet
 #define HEADER_SIZE 8                 // size of the protocol header
