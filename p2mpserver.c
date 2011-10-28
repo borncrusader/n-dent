@@ -24,7 +24,7 @@ int main(int argc, char *argv[])
   struct node buf_data[atoi(argv[3])];
   int fill_here,i;
 
-  int ret = 0, seq_num = 0, type = 0, flags=0,prev_seq_num=-1,next_there=0, last_seq_num = -1,run_flag=1;
+  int ret = 0, seq_num = 0, type = 0, flags=0,prev_seq_num=-1,next_there=0, last_seq_num = -1,run_flag=1,count=0;
 
   char from[INET_ADDRSTRLEN];
   FILE *fp;
@@ -102,6 +102,7 @@ int main(int argc, char *argv[])
              from, htons(sender.sin_port), seq_num);
       //printf("writing %d bytes of %d\n", ret-HEADER_SIZE, seq_num);
       fwrite(buf+HEADER_SIZE,ret-HEADER_SIZE,1,fp);
+	printf("Writing packet with seq num %d\n",seq_num);
       fflush(fp);
       prev_seq_num=seq_num;
       /*
@@ -111,9 +112,9 @@ int main(int argc, char *argv[])
          and set seq_num=seq_num of the packet that was just written
          */
 
-      while(1)
-      {
-        for(i=0;i<serv.N;(i++)%serv.N)
+//      while(1)
+  //    {
+        for(i=0;i<serv.N;(i+1)%serv.N)
         {
           if(buf_data[i].filled==1 && buf_data[i].seqnum==prev_seq_num+1)
           {
@@ -121,17 +122,23 @@ int main(int argc, char *argv[])
             //printf("writing %d\n", seq_num);
             fwrite(buf_data[i].buf+HEADER_SIZE,buf_data[i].buf_size-HEADER_SIZE,1,fp);
             fflush(fp);
+	printf("Writing packet with seq num %d\n",buf_data[i].seqnum);
             buf_data[i].filled=0;
             prev_seq_num=buf_data[i].seqnum;
+	    count=0;	
           }
+		count++;
+	
+	if(count==10)
+	break;
 
-          if(buf_data[i].seqnum==prev_seq_num+1)
-            next_there=1;
+          //if(buf_data[i].seqnum==prev_seq_num+1)
+            //next_there=1;
         }
 
-        if(next_there!=1)
-          break;
-      }
+        //if(next_there!=1)
+        //  break;
+      //}
 
       pack_data(prev_seq_num, MSG_TYPE_ACK, 0, ack_buf, 8);//CREATE THE ACK
       printf("Sending ack for sequence number = %d\n", prev_seq_num);
@@ -167,13 +174,13 @@ int main(int argc, char *argv[])
         printf("Oops! The world is going to end! Buffer full cannot save packet. Dropping it!\n\n");
       }
 
-      memcpy(buf_data[fill_here].buf,buf,ret);
+else { 
+     memcpy(buf_data[fill_here].buf,buf,ret);
       buf_data[fill_here].filled=1;
       buf_data[fill_here].seqnum=seq_num;
       buf_data[fill_here].buf_size=ret;
 
-      if(fill_here!=-1)
-      {
+ 
         pack_data(prev_seq_num, MSG_TYPE_ACK, 0, ack_buf, 8);//CREATE THE ACK
         printf("Sending ack for sequence number = %d\n", prev_seq_num);
         sendto(serv.sock_server_recv, ack_buf, 8, 0, (struct sockaddr*)&sender, sizeof(sender));//SEND THE prev ACK
