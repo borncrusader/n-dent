@@ -114,7 +114,7 @@ int main(int argc, char *argv[])
 
 //      while(1)
   //    {
-        for(i=0;i<serv.N;(i+1)%serv.N)
+        for(i=0;i<serv.N;(++i)%serv.N)
         {
           if(buf_data[i].filled==1 && buf_data[i].seqnum==prev_seq_num+1)
           {
