@@ -110,7 +110,7 @@ void* receiver(void *args) {
 
     node_ptr = pcb->win.head;
     while(node_ptr &&
-       node_ptr->filled &&
+       node_ptr->seq_num > -1 &&
        diff_seq_num >= 0) {
 
       ++(node_ptr->acks[ser_pos]);
@@ -145,8 +145,9 @@ void* receiver(void *args) {
     brk = 0;
     node_ptr = pcb->win.head;
     while(node_ptr &&
-       node_ptr->filled &&
+       node_ptr->seq_num > -1 &&
        diff_seq_num >= 0) {
+
       for(pos = 0; pos<pcb->num_recv; pos++) {
         if(node_ptr->acks[pos] == 0) {
           brk = 1;
@@ -171,6 +172,7 @@ void* receiver(void *args) {
 
       P2MP_ZERO_ADDR(node_ptr, struct node);
       P2MP_ZERO(dup_ack);
+      node_ptr->seq_num = -1;
 
       pcb->win.tail->next = node_ptr;
       pcb->win.tail = node_ptr;
