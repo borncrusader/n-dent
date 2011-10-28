@@ -109,7 +109,9 @@ void* receiver(void *args) {
     diff_seq_num = seq_num - pcb->win.head->seq_num;
 
     node_ptr = pcb->win.head;
-    while(node_ptr && diff_seq_num >= 0) {
+    while(node_ptr &&
+       node_ptr->filled &&
+       diff_seq_num >= 0) {
 
       ++(node_ptr->acks[ser_pos]);
       if(node_ptr->acks[ser_pos] > 2) {
@@ -142,7 +144,9 @@ void* receiver(void *args) {
 
     brk = 0;
     node_ptr = pcb->win.head;
-    while(node_ptr && diff_seq_num >= 0) {
+    while(node_ptr &&
+       node_ptr->filled &&
+       diff_seq_num >= 0) {
       for(pos = 0; pos<pcb->num_recv; pos++) {
         if(node_ptr->acks[pos] == 0) {
           brk = 1;
