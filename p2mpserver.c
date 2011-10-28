@@ -145,7 +145,7 @@ int main(int argc, char *argv[])
       printf("Sending ack for sequence number = %d\n", prev_seq_num);
       sendto(serv.sock_server_recv, ack_buf, 8, 0, (struct sockaddr*)&sender, sizeof(sender));//SEND THE ACK
 
-      if(last_seq_num == seq_num) {
+      if(last_seq_num == prev_seq_num) {
 		        printf("Written the last packet, sequence number = %d\n", seq_num);
 			printf("TRANSFER COMPLETE :QUITTING \n");
         break;
@@ -169,12 +169,20 @@ int main(int argc, char *argv[])
         if(buf_data[i].filled==0)
         {fill_here=i;
           break;}
+	if(buf_data[i].seqnum=seq_num){
+	fill_here=-2;}
       }
 
       if(fill_here==-1)
       {
         printf("Oops! The world is going to end! Buffer full cannot save packet. Dropping it!\n\n");
       }
+
+else if(fill_here==-2)
+{
+printf("\n\033[01;33mAlready Exists, %d will not be buffered\n",seq_num);
+printf("%c[%dm", 0x1B, 0);
+}
 
 else if(prev_seq_num<seq_num) { 
      memcpy(buf_data[fill_here].buf,buf,ret);
