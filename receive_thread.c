@@ -82,6 +82,8 @@ void* receiver(void *args) {
         // Fast Retransmit code flow
         //printf("RECEIVER : Num of dup_acks : %d for seq_num : %d\n", dup_ack[ser_pos], seq_num);
 
+        dup_ack[ser_pos] = 0;
+
         for(pos = 0 ; pos < pcb->num_recv ; ++pos) {
           if(node_ptr->acks[pos] == 0) {
 
@@ -113,6 +115,7 @@ void* receiver(void *args) {
       if(node_ptr->acks[ser_pos] > 2) {
         // Fast Retransmit code
         // Resend next packet to all servers from which we have not received ACK
+        node_ptr->acks[ser_pos] = 1;
         for(pos = 0 ; pos < pcb->num_recv ; ++pos) {
           if(node_ptr->next && node_ptr->next->acks[pos] == 0) {
 
