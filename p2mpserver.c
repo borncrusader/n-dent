@@ -181,14 +181,17 @@ else if(prev_seq_num<seq_num) {
       buf_data[fill_here].filled=1;
       buf_data[fill_here].seqnum=seq_num;
       buf_data[fill_here].buf_size=ret;
-	printf("\n%d was buffered in pos %d\n",seq_num,fill_here);
+//printf("%c[%d;%d;%dm", 0x1B, 5,31,0);        	
+printf("\n\033[22;31m %d was buffered in pos %d",seq_num,fill_here);
+printf("%c[%dm", 0x1B, 0);
+printf("\n");
 }
 
  //HANDLE SPECIAL CASE WHERE A GREATER PACKET IS ACKED AND A PACKET OF LESSER VALUE COMES IN
         pack_data(prev_seq_num, MSG_TYPE_ACK, 0, ack_buf, 8);//CREATE THE ACK
-	//printf("%c[%d;%d;%dmHello World", 0x1B, 0,31,0);        
+	
 	printf("Sending ack for sequence number = %d\n", prev_seq_num);
-	//printf("%c[%dm", 0x1B, 0);
+
         sendto(serv.sock_server_recv, ack_buf, 8, 0, (struct sockaddr*)&sender, sizeof(sender));//SEND THE prev ACK
          
     }
