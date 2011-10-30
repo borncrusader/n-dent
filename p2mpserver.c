@@ -123,7 +123,7 @@ int main(int argc, char *argv[])
             //printf("writing %d\n", seq_num);
             fwrite(buf_data[i].buf+HEADER_SIZE,buf_data[i].buf_size-HEADER_SIZE,1,fp);
             fflush(fp);
-       		printf("Writing packet with seq num %d\n",buf_data[i].seqnum);
+       		printf("Writing packet with seq num %d\n with size %d ",buf_data[i].seqnum,buf_data[i].buf_size-HEADER_SIZE);
             buf_data[i].filled=0;
             prev_seq_num=buf_data[i].seqnum;
 	    count=0;	
@@ -146,7 +146,8 @@ int main(int argc, char *argv[])
       sendto(serv.sock_server_recv, ack_buf, 8, 0, (struct sockaddr*)&sender, sizeof(sender));//SEND THE ACK
 
       if(last_seq_num == prev_seq_num) {
-		        printf("Written the last packet, sequence number = %d\n", seq_num);
+		        //printf("Written the last packet, sequence number = %d\n", seq_num);
+			system("clear");
 			printf("TRANSFER COMPLETE :QUITTING \n");
         break;
       }
@@ -169,8 +170,10 @@ int main(int argc, char *argv[])
         if(buf_data[i].filled==0)
         {fill_here=i;
           break;}
-	if(buf_data[i].seqnum=seq_num){
-	fill_here=-2;}
+
+	if(buf_data[i].seqnum==seq_num){
+	fill_here=-2;
+	break;}
       }
 
       if(fill_here==-1)
