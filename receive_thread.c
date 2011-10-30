@@ -187,7 +187,12 @@ void* receiver(void *args) {
 
       pcb->win.tail->next = node_ptr;
       pcb->win.tail = node_ptr;
-      pcb->win.head = node_temp;
+      if(node_temp != NULL)
+        pcb->win.head = node_temp;
+      else {
+        pcb->win.head = pcb->win.tail;
+        pcb->win.tail->next = NULL;
+      }
       node_ptr = pcb->win.head;
       (pcb->win.num_empty)++;
       diff_seq_num--;
