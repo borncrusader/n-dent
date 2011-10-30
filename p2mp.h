@@ -56,9 +56,6 @@
 
 #define DATA_SIZE (BUFFER_SIZE-HEADER_SIZE)
 
-#define INITIALISE_STAT(_s) \
-  memset(_s,0,sizeof(stat_t))
-
 void die(const char*, int);
 void warn(const char*, int);
 

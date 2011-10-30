@@ -44,6 +44,9 @@ void* sender(void *args) {
                        sizeof(struct sockaddr_in));
           if(ret==-1) {
             warn("SENDER : sento() failed!", errno);
+          } else {
+            P2MPC_STAT_INCREMENT(&(pcb->stat), P2MPC_STAT_PKTS_SENT, i);
+            P2MPC_STAT_UPDATE(&(pcb->stat), P2MPC_STAT_BYTES_SENT, i, node_ptr->buf_size);
           }
         }
         if(node_ptr->flags & FLAG_EOM) {

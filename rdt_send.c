@@ -66,6 +66,9 @@ void* rdt_send(void *args) {
       }
 
       printf("RDT_SEND : Filling buffer... empty = %d buf_size = %d\n", pcb->win.num_empty, buf_size);
+
+      P2MPC_STAT_INCREMENT(&(pcb->stat), P2MPC_STAT_RDT_SEND_PKTS_READ, 0);
+      P2MPC_STAT_UPDATE(&(pcb->stat), P2MPC_STAT_RDT_SEND_BYTES_READ, 0, buf_size);
     }
     else {
       if(fseek(fp, -buf_size, SEEK_CUR) == -1) {

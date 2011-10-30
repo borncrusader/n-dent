@@ -3,7 +3,7 @@
 
 void* receiver(void *args) {
 
-  int ret = 0, seq_num = 0, type = 0, flags = 0;
+  int ret = 0, seq_num = 0, type = 0, flags = 0, rcvd_size = 0;
   int pos = 0, ser_pos = 0, brk = 0, diff_seq_num = 0;
   int dup_ack[MAX_RECV];
   char buf[BUFFER_SIZE];
@@ -50,6 +50,8 @@ void* receiver(void *args) {
       continue;
     }
 
+    rcvd_size = ret;
+
     printf("RECEIVER : Received ack from %s:%d, sequence number = %d\n", from, ntohs(ser.sin_port), seq_num);
 
     pos = 0;
@@ -67,16 +69,16 @@ void* receiver(void *args) {
       continue;
     }
 
-    pthread_mutex_lock(&(pcb->cli_stats.st_lck));
-    pcb->cli_stats.acks_rcvd[ser_pos]++;
-    pthread_mutex_unlock(&(pcb->cli_stats.st_lck));
-
     pthread_mutex_lock(&(pcb->win.win_lck));
 
     node_ptr = pcb->win.head;
 
     if(seq_num == node_ptr->seq_num-1) {
       dup_ack[ser_pos]++;
+
+      P2MPC_STAT_INCREMENT(&(pcb->stat), P2MPC_STAT_DUPACKS_RCVD, ser_pos);
+      P2MPC_STAT_UPDATE(&(pcb->stat), P2MPC_STAT_DUPACKS_BYTES_RCVD, ser_pos, rcvd_size);
+
       if(dup_ack[ser_pos] >= 2) {
 
         // Fast Retransmit code flow
@@ -99,10 +101,12 @@ void* receiver(void *args) {
 
             if(ret==-1) {
               warn("RECEIVER : sento() failed!", errno);
+            } else {
+              P2MPC_STAT_INCREMENT(&(pcb->stat), P2MPC_STAT_FRTRANS_PKTS_SENT, pos);
+              P2MPC_STAT_UPDATE(&(pcb->stat), P2MPC_STAT_FRTRANS_BYTES_SENT, pos, ret);
             }
           }
         }
-
       }
     }
 
@@ -132,6 +136,9 @@ void* receiver(void *args) {
                     sizeof(pcb->recv[pos]));
             if(ret==-1) {
               warn("RECEIVER : sento() failed!", errno);
+            } else {
+              P2MPC_STAT_INCREMENT(&(pcb->stat), P2MPC_STAT_FRTRANS_PKTS_SENT, pos);
+              P2MPC_STAT_UPDATE(&(pcb->stat), P2MPC_STAT_FRTRANS_BYTES_SENT, pos, ret);
             }
           }
         }

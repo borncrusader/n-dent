@@ -16,6 +16,7 @@ void* timer(void *args)
   pthread_mutex_lock(&(pcb->win.win_lck));
 
   //printf("TIMER : TIMED OUT\n");
+  P2MPC_STAT_INCREMENT(&(pcb->stat), P2MPC_STAT_TIMER_EXPIRED, 0);
 
   if(pcb->win.head->filled) {
     for(pos=0; pos<pcb->num_recv; pos++) {
@@ -30,6 +31,9 @@ void* timer(void *args)
                      sizeof(struct sockaddr_in));
         if(ret==-1) {
           warn("TIMER : sento() failed!", errno);
+        } else {
+          P2MPC_STAT_INCREMENT(&(pcb->stat), P2MPC_STAT_TRTRANS_PKTS_SENT, pos);
+          P2MPC_STAT_UPDATE(&(pcb->stat), P2MPC_STAT_TRTRANS_BYTES_SENT, pos, pcb->win.head->buf_size);
         }
       }
     }

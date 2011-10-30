@@ -12,6 +12,46 @@ void usage()
   exit(1);
 }
 
+void print_stats(p2mp_pcb *pcb)
+{
+  stats_t *s = &(pcb->stat);
+  int i;
+
+  printf("\nGlobal stats\n");
+  printf("Timer expired         : %ld\n"
+         "RDT Send pkts read    : %ld\n"
+         "RDT Send bytes read   : %ld\n",
+         s->stat[P2MPC_STAT_TIMER_EXPIRED][0],
+         s->stat[P2MPC_STAT_RDT_SEND_PKTS_READ][0],
+         s->stat[P2MPC_STAT_RDT_SEND_BYTES_READ][0]);
+
+  for(i=0; i<pcb->num_recv; i++) {
+    printf("\nReceiver %d, %s:%d\n", i,
+           inet_ntoa(pcb->recv[i].sin_addr),
+           ntohs(pcb->recv[i].sin_port));
+    printf("Packets Sent          : %ld\n"
+           "Bytes Sent            : %ld\n"
+           "Acks Received         : %ld\n"
+           "Acks Bytes Received   : %ld\n"
+           "Dup Acks Received     : %ld\n"
+           "Dup Acks Bytes Rcvd   : %ld\n"
+           "Timer retrans pkts    : %ld\n"
+           "Timer retrans bytes   : %ld\n"
+           "Fast Retransmit pkts  : %ld\n"
+           "Fast Retransmit bytes : %ld\n",
+           s->stat[P2MPC_STAT_PKTS_SENT][i],
+           s->stat[P2MPC_STAT_BYTES_SENT][i],
+           s->stat[P2MPC_STAT_ACKS_RCVD][i],
+           s->stat[P2MPC_STAT_ACKS_BYTES_RCVD][i],
+           s->stat[P2MPC_STAT_DUPACKS_RCVD][i],
+           s->stat[P2MPC_STAT_DUPACKS_BYTES_RCVD][i],
+           s->stat[P2MPC_STAT_TRTRANS_PKTS_SENT][i],
+           s->stat[P2MPC_STAT_TRTRANS_BYTES_SENT][i],
+           s->stat[P2MPC_STAT_FRTRANS_PKTS_SENT][i],
+           s->stat[P2MPC_STAT_FRTRANS_BYTES_SENT][i]);
+  }
+}
+
 void buffer_init(p2mp_pcb *pcb) {
   int i = 0;
   node *node_ptr = NULL, *node_mv = NULL;
@@ -125,6 +165,8 @@ int main(int argc, char *argv[])
 
   close(pcb.sockfd);
   buffer_delete(&pcb);
+
+  print_stats(&pcb);
 
   return 0;
 }
