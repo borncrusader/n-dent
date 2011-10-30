@@ -72,7 +72,8 @@ int main(int argc, char *argv[])
 
     rtt_sum += rtt;
 
-    printf("received %s from %s:%d, rtt = %ld us\n",
+    printf("packet %d, received %s from %s:%d, rtt = %ld us\n",
+           i,
            buf,
            inet_ntoa(src_addr.sin_addr),
            htons(src_addr.sin_port),
