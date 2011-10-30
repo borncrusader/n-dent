@@ -41,7 +41,7 @@
 
 #define BUF_TIMEOUT 2                 // buffer aggregator timeout
 #define ACK_SEC 0                     // timeout value for ack in secs, default 0 sec
-#define ACK_NSEC 30000000             // timeout value for ack in nanosecs, default 30msec 
+#define ACK_NSEC 30000000             // timeout value for ack in nanosecs, default 30msec
 
 #define BUFFER_SIZE 1500              // Maximum segment size of a packet
 #define HEADER_SIZE 8                 // size of the protocol header

@@ -28,8 +28,8 @@ void print_stats(p2mp_sb *s)
          "Bytes received in-seq : %ld\n"
          "Pkts rcvd out-of-seq  : %ld\n"
          "Bytes rcvd out-of-seq : %ld\n"
-         "Pkts rcvd not-reqd    : %ld\n"
-         "Bytes rcvd not-reqd   : %ld\n\n",
+         "Pkts rcvd redundant   : %ld\n"
+         "Bytes rcvd redundant  : %ld\n\n",
          s->stat[P2MPS_STAT_PKTS_IS_RCVD],
          s->stat[P2MPS_STAT_BYTES_IS_RCVD],
          s->stat[P2MPS_STAT_PKTS_OS_RCVD],

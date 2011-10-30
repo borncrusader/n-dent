@@ -3,12 +3,13 @@
 
 void usage()
 {
-  printf("p2mpclient server-1 server-1-port [server-2 server-2-port ... server-r server-r-port] file-name N MSS\n");
+  printf("p2mpclient server-1 server-1-port [server-2 server-2-port ... server-r server-r-port] file-name N MSS max-rtt\n");
   printf("           server-n      - server-n's ip address (at least 1 server should be specified, max 10)\n");
   printf("           server-n-port - server-n's port (at least 1 server should be specified, max 10)\n");
   printf("           file-name     - file to be transferred\n");
   printf("           N             - window size\n");
   printf("           MSS           - maximum segment size of each segment (< 1500)\n");
+  printf("           max-rtt       - maximum rtt (in ms) of all receivers (found using rttserver and rttclient programs)\n");
   exit(1);
 }
 
@@ -106,51 +107,44 @@ void buffer_delete(p2mp_pcb *pcb) {
 int main(int argc, char *argv[])
 {
   int i, st = 0;
-  char *cfg_file = NULL;
 
   struct sigevent sev;
 
   p2mp_pcb pcb;
 
-  if(argc==1) {
-    usage();
-  }
-
   P2MP_ZERO(pcb);
 
-  if(!strncmp(argv[1], "-f", 3)) {
-    if (argc != 3) {
-      usage();
-    }
-    cfg_file = argv[2];
-  } else if(!strncmp(argv[1], "-h", 3)) {
+  if(argc < 7) {
     usage();
-  } else {
-    if(argc < 6) {
-      usage();
-    }
-    pcb.mss = atoi(argv[argc-1]);
-    if(pcb.mss < 0 || pcb.mss > BUFFER_SIZE) {
-      usage();
-    }
-    pcb.N = atoi(argv[argc-2]);
-    strncpy(pcb.filename, argv[argc-3], FILE_NSIZE);
-
-    for(i = 1 ; i < argc-4 && st <= MAX_RECV ; i+=2) {
-      pcb.recv[st].sin_family = AF_INET;
-      pcb.recv[st].sin_addr.s_addr = inet_addr(argv[i]);
-      pcb.recv[st].sin_port = htons(atoi(argv[i+1]));
-      ++st;
-    }
-
-    pcb.num_recv = st;
   }
+  pcb.rtt = atoi(argv[argc-1]);
+  pcb.mss = atoi(argv[argc-2]);
+  if(pcb.mss < 0 || pcb.mss > BUFFER_SIZE) {
+    usage();
+  }
+  pcb.N = atoi(argv[argc-3]);
+  strncpy(pcb.filename, argv[argc-4], FILE_NSIZE);
+
+  for(i = 1 ; i < argc-5 && st <= MAX_RECV ; i+=2) {
+    pcb.recv[st].sin_family = AF_INET;
+    pcb.recv[st].sin_addr.s_addr = inet_addr(argv[i]);
+    pcb.recv[st].sin_port = htons(atoi(argv[i+1]));
+    ++st;
+  }
+
+  pcb.num_recv = st;
 
   pcb.win.num_empty = pcb.N;
 
   // Setup socket
   pcb.sockfd = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
 
+  // Setup timeout value
+  pcb.timer_val.it_value.tv_sec = (pcb.rtt*2)/1000; // rtt in ms
+  pcb.timer_val.it_value.tv_nsec = ((pcb.rtt*2)%1000)*1000000; // rtt in ms
+  pcb.timer_val.it_interval.tv_sec = 0;
+  pcb.timer_val.it_interval.tv_nsec = 0;
+ 
   // Setup timer
   sev.sigev_notify = SIGEV_THREAD;
   sev.sigev_notify_function = (void*)timer;

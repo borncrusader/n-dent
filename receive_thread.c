@@ -13,16 +13,9 @@ void* receiver(void *args) {
   node *node_ptr, *node_temp;
   socklen_t len;
 
-  struct itimerspec its;
-
   p2mp_pcb *pcb = (p2mp_pcb *)args;
 
   len = sizeof(ser);
-
-  its.it_value.tv_sec = ACK_SEC;
-  its.it_value.tv_nsec = ACK_NSEC;
-  its.it_interval.tv_sec = 0;
-  its.it_interval.tv_nsec = 0;
 
   while(looper) {
 
@@ -182,7 +175,7 @@ void* receiver(void *args) {
         }
         else {
           //printf("RECEIVER : Resetting timer\n");
-          timer_settime(pcb->timerid, 0, &its, NULL);
+          timer_settime(pcb->timerid, 0, &(pcb->timer_val), NULL);
         }
       }
 

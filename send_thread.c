@@ -7,17 +7,12 @@ void* sender(void *args) {
   int ret = 0, i = 0, looper = 1;
   unsigned int seq_num = 0;
 
-  struct itimerspec its, now;
+  struct itimerspec now;
 
   p2mp_pcb *pcb = (p2mp_pcb*)args;
   node *node_ptr = NULL;
 
   pcb->win.last_seq = -1;
-
-  its.it_value.tv_sec = ACK_SEC;
-  its.it_value.tv_nsec = ACK_NSEC;
-  its.it_interval.tv_sec = 0;
-  its.it_interval.tv_nsec = 0;
 
   while(looper) {
 
@@ -58,7 +53,7 @@ void* sender(void *args) {
         // start the timer
         if(node_ptr->seq_num == pcb->win.head->seq_num) {
           //printf("SENDER : Starting timer for head packet\n");
-          timer_settime(pcb->timerid, 0, &its, NULL);
+          timer_settime(pcb->timerid, 0, &(pcb->timer_val), NULL);
         }
         seq_num++;
         node_ptr = node_ptr->next;
