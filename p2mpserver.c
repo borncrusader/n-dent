@@ -90,7 +90,7 @@ int main(int argc, char *argv[])
   strncpy(serv.filename, argv[2],FILE_NSIZE);
 
   if((serv.sock_server_recv = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP)) == -1) {
-    die("p2mpserver : socket creation failed!", errno);
+    die("p2mpserver : Socket creation failed!", errno);
   }
 
   server.sin_family = AF_INET;
@@ -99,14 +99,14 @@ int main(int argc, char *argv[])
 
   if(bind(serv.sock_server_recv, (struct sockaddr*)&server, sizeof(server)) == -1) {
     close(serv.sock_server_recv);
-    die("p2mpserver : bind failed!", errno);
+    die("p2mpserver : Bind failed!", errno);
   }
 
 
   /*
   fp = fopen(serv.filename, "w");
   if(fp == NULL) {
-    die("p2mpserver : file cannot be opened!", errno);
+    die("p2mpserver : File cannot be opened!", errno);
   }
   */
 
@@ -128,7 +128,7 @@ int main(int argc, char *argv[])
     from[INET_ADDRSTRLEN-1] = '\0';
 
     if(unpack_data(&seq_num, &type, &flags, buf, ret) == -1) {
-      warn("p2mpserver: checksum error!", 0);
+      warn("p2mpserver: Checksum error!", 0);
       P2MPS_STAT_INCREMENT(&serv, P2MPS_STAT_PKTS_CORRUPT);
       P2MPS_STAT_UPDATE(&serv, P2MPS_STAT_BYTES_CORRUPT, ret);
       continue;
@@ -146,7 +146,7 @@ int main(int argc, char *argv[])
 
     if(flags&FLAG_EOM) {
       last_seq_num = seq_num;
-      printf("Recieved EOM, sequence number = %d\n", seq_num);
+      printf("Received EOM, sequence number = %d\n", seq_num);
     }
 
     if(seq_num==prev_seq_num+1)
@@ -208,7 +208,7 @@ int main(int argc, char *argv[])
           //printf("writing %d\n", seq_num);
           fwrite(buf_data[i].buf+HEADER_SIZE,buf_data[i].buf_size-HEADER_SIZE,1,fp);
           fflush(fp);
-          printf("Writing packet with seq num %d\n with size %d ",buf_data[i].seqnum,buf_data[i].buf_size-HEADER_SIZE);
+          printf("Writing packet with sequence number %d\n ",buf_data[i].seqnum);
           buf_data[i].filled=0;
           prev_seq_num=buf_data[i].seqnum;
           count=0;	
@@ -227,7 +227,8 @@ int main(int argc, char *argv[])
       //}
 
       pack_data(prev_seq_num, MSG_TYPE_ACK, 0, ack_buf, HEADER_SIZE);//CREATE THE ACK
-      printf("Sending ack for sequence number = %d\n", prev_seq_num);
+      printf("\033[01;37mSending ack for sequence number = %d\n", prev_seq_num);
+	printf("%c[%dm", 0x1B, 0);
       sendto(serv.sock_server_recv, ack_buf, HEADER_SIZE, 0, (struct sockaddr*)&sender, sizeof(sender));//SEND THE ACK
 
       P2MPS_STAT_INCREMENT(&serv, P2MPS_STAT_ACKS_SENT);
@@ -236,7 +237,7 @@ int main(int argc, char *argv[])
       if(last_seq_num == prev_seq_num) {
         //printf("Written the last packet, sequence number = %d\n", seq_num);
         system("clear");
-        printf("TRANSFER COMPLETE :QUITTING \n");
+        printf("TRANSFER COMPLETE : QUITTING \n");
         break;
       }
     }
@@ -250,7 +251,7 @@ int main(int argc, char *argv[])
 
       /* Have to bufer the packet if there is space available in the buffer
          let to_buffer[] be the struct array
-         find the slot where filled=0
+         find the slot where filled=0	
          push the packet into that slot and set filled=1 
          come out of loop
          if there is no slot then it means window buffer is full. DROP PACKET
@@ -274,7 +275,8 @@ int main(int argc, char *argv[])
 
       if(fill_here==-1)
       {
-        printf("Oops! The world is going to end! Buffer full cannot save packet. Dropping it!\n\n");
+        printf("\033[01;31mBuffer full cannot save packet. Dropping it!\n\n");
+	printf("%c[%dm", 0x1B, 0);
       }
       else if(fill_here==-2)
       {
@@ -295,10 +297,11 @@ int main(int argc, char *argv[])
         printf("\n");
       }
 
-      //HANDLE SPECIAL CASE WHERE A GREATER PACKET IS ACKED AND A PACKET OF LESSER VALUE COMES IN
+ 
       pack_data(prev_seq_num, MSG_TYPE_ACK, 0, ack_buf, HEADER_SIZE);//CREATE THE ACK
 
-      printf("Sending ack for sequence number = %d\n", prev_seq_num);
+      printf("\033[01;37mSending ack for sequence number = %d\n", prev_seq_num);
+	printf("%c[%dm", 0x1B, 0);
 
       sendto(serv.sock_server_recv, ack_buf, HEADER_SIZE, 0, (struct sockaddr*)&sender, sizeof(sender));//SEND THE prev ACK
 
