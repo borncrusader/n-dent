@@ -77,7 +77,7 @@ int main(int argc, char *argv[])
   strncpy(serv.filename, argv[2],FILE_NSIZE);
 
   if((serv.sock_server_recv = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP)) == -1) {
-    die("p2mpserver : socket creation failed!", errno);
+    die("p2mpserver : Socket creation failed!", errno);
   }
 
   server.sin_family = AF_INET;
@@ -86,13 +86,13 @@ int main(int argc, char *argv[])
 
   if(bind(serv.sock_server_recv, (struct sockaddr*)&server, sizeof(server)) == -1) {
     close(serv.sock_server_recv);
-    die("p2mpserver : bind failed!", errno);
+    die("p2mpserver : Bind failed!", errno);
   }
 
 
   fp = fopen(serv.filename, "w");
   if(fp == NULL) {
-    die("p2mpserver : file cannot be opened!", errno);
+    die("p2mpserver : File cannot be opened!", errno);
   }
 
   len=sizeof(sender);
@@ -113,7 +113,7 @@ int main(int argc, char *argv[])
     from[INET_ADDRSTRLEN-1] = '\0';
 
     if(unpack_data(&seq_num, &type, &flags, buf, ret) == -1) {
-      warn("p2mpserver: checksum error!", 0);
+      warn("p2mpserver: Checksum error!", 0);
       P2MPS_STAT_INCREMENT(&serv, P2MPS_STAT_PKTS_CORRUPT);
       P2MPS_STAT_UPDATE(&serv, P2MPS_STAT_BYTES_CORRUPT, ret);
       continue;
@@ -131,7 +131,7 @@ int main(int argc, char *argv[])
 
     if(flags&FLAG_EOM) {
       last_seq_num = seq_num;
-      printf("Recieved EOM, sequence number = %d\n", seq_num);
+      printf("Received EOM, sequence number = %d\n", seq_num);
     }
 
     if(seq_num==prev_seq_num+1)
@@ -144,7 +144,7 @@ int main(int argc, char *argv[])
 
       //printf("writing %d bytes of %d\n", ret-HEADER_SIZE, seq_num);
       fwrite(buf+HEADER_SIZE,ret-HEADER_SIZE,1,fp);
-      printf("Writing packet with seq num %d\n",seq_num);
+      printf("Writing packet with sequence number %d\n",seq_num);
       fflush(fp);
       prev_seq_num=seq_num;
       /*
@@ -165,7 +165,7 @@ int main(int argc, char *argv[])
           //printf("writing %d\n", seq_num);
           fwrite(buf_data[i].buf+HEADER_SIZE,buf_data[i].buf_size-HEADER_SIZE,1,fp);
           fflush(fp);
-          printf("Writing packet with seq num %d\n ",buf_data[i].seqnum);
+          printf("Writing packet with sequence number %d\n ",buf_data[i].seqnum);
           buf_data[i].filled=0;
           prev_seq_num=buf_data[i].seqnum;
           count=0;	
@@ -194,7 +194,7 @@ int main(int argc, char *argv[])
       if(last_seq_num == prev_seq_num) {
         //printf("Written the last packet, sequence number = %d\n", seq_num);
         system("clear");
-        printf("TRANSFER COMPLETE :QUITTING \n");
+        printf("TRANSFER COMPLETE : QUITTING \n");
         break;
       }
     }
