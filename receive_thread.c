@@ -118,6 +118,17 @@ void* receiver(void *args) {
        diff_seq_num >= 0) {
 
       ++(node_ptr->acks[ser_pos]);
+
+      if(seq_num == node_ptr->seq_num) {
+        if(node_ptr->acks[ser_pos] == 1) {
+          P2MPC_STAT_INCREMENT(&(pcb->stat), P2MPC_STAT_ACKS_RCVD, pos);
+          P2MPC_STAT_UPDATE(&(pcb->stat), P2MPC_STAT_ACKS_BYTES_RCVD, pos, rcvd_size);
+        } else {
+          P2MPC_STAT_INCREMENT(&(pcb->stat), P2MPC_STAT_DUPACKS_RCVD, pos);
+          P2MPC_STAT_UPDATE(&(pcb->stat), P2MPC_STAT_DUPACKS_BYTES_RCVD, pos, rcvd_size);
+        }
+      }
+
       if(node_ptr->acks[ser_pos] > 2) {
         // Fast Retransmit code
         // Resend next packet to all servers from which we have not received ACK

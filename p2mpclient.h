@@ -6,20 +6,20 @@
 typedef enum {
   P2MPC_STAT_ACKS_RCVD = 0,          // number of acks received
   P2MPC_STAT_ACKS_BYTES_RCVD,        // number of acks in bytes received
-  P2MPC_STAT_DUPACKS_RCVD,           // number of acks received
-  P2MPC_STAT_DUPACKS_BYTES_RCVD,     // number of acks received
-  P2MPC_STAT_FRTRANS_PKTS_SENT,      // number of acks received
-  P2MPC_STAT_FRTRANS_BYTES_SENT,     // number of acks received
+  P2MPC_STAT_DUPACKS_RCVD,           // number of dupacks received
+  P2MPC_STAT_DUPACKS_BYTES_RCVD,     // number of dupacks in bytes received
+  P2MPC_STAT_FRTRANS_PKTS_SENT,      // number of fast-retransmits packets sent
+  P2MPC_STAT_FRTRANS_BYTES_SENT,     // number of fast-retransmits bytes sent
 
-  P2MPC_STAT_PKTS_SENT,              // number of acks received
-  P2MPC_STAT_BYTES_SENT,             // number of acks received
+  P2MPC_STAT_PKTS_SENT,              // number of packets sent
+  P2MPC_STAT_BYTES_SENT,             // number of bytes sent
 
-  P2MPC_STAT_TRTRANS_PKTS_SENT,      // number of acks received
-  P2MPC_STAT_TRTRANS_BYTES_SENT,     // number of acks received
-  P2MPC_STAT_TIMER_EXPIRED,          // number of acks received, only at recv = 0
+  P2MPC_STAT_TRTRANS_PKTS_SENT,      // number of timer expiry packets sent
+  P2MPC_STAT_TRTRANS_BYTES_SENT,     // number of timer expiry bytes sent
+  P2MPC_STAT_TIMER_EXPIRED,          // number of timer expiry
 
-  P2MPC_STAT_RDT_SEND_PKTS_READ,     // number of acks received, only at recv = 0
-  P2MPC_STAT_RDT_SEND_BYTES_READ,    // number of acks received, only at recv = 0
+  P2MPC_STAT_RDT_SEND_PKTS_READ,     // number of packets received from app
+  P2MPC_STAT_RDT_SEND_BYTES_READ,    // number of bytes received from app
 
   P2MPC_STAT_MAX
 }p2mpc_stat_type;
