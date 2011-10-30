@@ -27,22 +27,22 @@ typedef enum {
 
 /*
 typedef struct rev_window {
-        struct node *left;
-        struct node *right;
-        struct node *head;
-        struct node *toack;
+  struct node *left;
+  struct node *right;
+  struct node *head;
+  struct node *toack;
 } rev_window;
-*/
+   */
 
 typedef struct p2mp_sb {
-	float p;
-	int N;
-	int sock_server_recv;
-	char filename[FILE_NSIZE];
-	//struct rev_window w;
+  float p;
+  int N;
+  int sock_server_recv;
+  char filename[FILE_NSIZE];
+  //struct rev_window w;
   unsigned long stat[P2MPS_STAT_MAX];
+  char md5[MD5_LEN+1];
 } p2mp_sb;
-
 
 typedef struct node {
 	int seqnum;

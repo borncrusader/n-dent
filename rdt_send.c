@@ -5,12 +5,45 @@ void* rdt_send(void *args) {
   p2mp_pcb *pcb;
   node *node_ptr;
   int c;
-  int buf_size, flags;
+  int buf_size, flags=0;
   int looper = 1;
   char buf[BUFFER_SIZE];
   FILE *fp;
+  int filename_size;
+  char *basename_file;
 
   pcb = (p2mp_pcb*)args;
+  basename_file = basename(pcb->filename);
+  filename_size = strlen(basename_file);
+
+  c = compute_md5(pcb->filename, pcb->md5);
+
+  // send file-name and md5 first
+  pthread_mutex_lock(&(pcb->win.win_lck));
+  node_ptr = pcb->win.head;
+  node_ptr->flags = 0;
+  node_ptr->buf_size = HEADER_SIZE;
+
+  if(c == 1) {
+    strncpy(node_ptr->buf+HEADER_SIZE, pcb->md5, MD5_LEN);
+
+    node_ptr->buf_size = HEADER_SIZE + MD5_LEN;
+    node_ptr->flags |= FLAG_MD5;
+  } else {
+    pcb->md5[0] = '\0';
+  }
+
+  strncpy(node_ptr->buf+node_ptr->buf_size, basename_file, filename_size);
+
+  node_ptr->filled = 1;
+  node_ptr->buf_size += filename_size;
+  node_ptr->flags |= FLAG_FNAME;
+ 
+  --(pcb->win.num_empty);
+
+  pcb->win.data_available = 1;
+
+  pthread_mutex_unlock(&(pcb->win.win_lck));
 
   fp = fopen(pcb->filename, "rb");
   if(fp == NULL) {

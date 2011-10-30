@@ -61,10 +61,13 @@ typedef struct {
   int sockfd;                         // Socket fds connecting with the receiver
   int bind_port;                      // port to which the receiver should bind to
   char filename[FILE_NSIZE];          // file to send
+  char md5[MD5_LEN+1];                // md5 sum of the file
   struct sockaddr_in recv[MAX_RECV];  // receivers
   stats_t stat;                       // Stats structure
   window win;                         // window
   timer_t timerid;                    // Timer identifier
+  struct timeval start_time;          // for timing purposes
+  struct timeval end_time;            // for timing purposes
   pthread_t sender;                   // thread id of the send thread
   pthread_t receiver;                 // thread id of the receive thread
   pthread_t buf_mgr;                  // thread id of the buffer manager

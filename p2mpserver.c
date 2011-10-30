@@ -12,6 +12,9 @@ void usage() {
 
 void print_stats(p2mp_sb *s)
 {
+  char md5[MD5_LEN+1];
+  int c;
+
   printf("\nStatistics\n");
   printf("Acks pkts sent        : %ld\n"
          "Acks bytes sent       : %ld\n"
@@ -38,9 +41,19 @@ void print_stats(p2mp_sb *s)
          s->stat[P2MPS_STAT_PKTS_CORRUPT],
          s->stat[P2MPS_STAT_BYTES_CORRUPT]);
   printf("Pkts dropped          : %ld\n"
-         "Bytes dropped         : %ld\n",
+         "Bytes dropped         : %ld\n\n",
          s->stat[P2MPS_STAT_PKTS_DROP],
          s->stat[P2MPS_STAT_BYTES_DROP]);
+
+  printf("File saved with filename %s\n", s->filename);
+  if(s->md5[0]) {
+    c = compute_md5(s->filename, md5);
+
+    printf("md5 checksum from packet   : %s\n", s->md5);
+    if(c == 1) {
+      printf("md5 checksum of saved file : %s\n", md5);
+    }
+  }
 }
 
 int main(int argc, char *argv[])
@@ -59,7 +72,7 @@ int main(int argc, char *argv[])
   int ret = 0, seq_num = 0, type = 0, flags=0,prev_seq_num=-1,next_there=0, last_seq_num = -1,run_flag=1,count=0,prev_ackd=-1;
 
   char from[INET_ADDRSTRLEN];
-  FILE *fp;
+  FILE *fp = NULL;
 
   P2MP_ZERO(serv);
 
@@ -90,10 +103,12 @@ int main(int argc, char *argv[])
   }
 
 
+  /*
   fp = fopen(serv.filename, "w");
   if(fp == NULL) {
     die("p2mpserver : file cannot be opened!", errno);
   }
+  */
 
   len=sizeof(sender);
 
@@ -142,10 +157,38 @@ int main(int argc, char *argv[])
       P2MPS_STAT_INCREMENT(&serv, P2MPS_STAT_PKTS_IS_RCVD);
       P2MPS_STAT_UPDATE(&serv, P2MPS_STAT_BYTES_IS_RCVD, ret);
 
-      //printf("writing %d bytes of %d\n", ret-HEADER_SIZE, seq_num);
-      fwrite(buf+HEADER_SIZE,ret-HEADER_SIZE,1,fp);
-      printf("Writing packet with seq num %d\n",seq_num);
-      fflush(fp);
+      if(flags&FLAG_FNAME) {
+        // first packet arriving with the filename/md5, open the file pointer
+        int offset = HEADER_SIZE;
+        buf[ret] = '\0';
+
+        if(flags&FLAG_MD5) {
+          strncpy(serv.md5, buf+HEADER_SIZE, MD5_LEN);
+          serv.md5[MD5_LEN] = '\0';
+          offset = HEADER_SIZE+MD5_LEN;
+        } else {
+          serv.md5[0] = '\0';
+        }
+
+        if(access(buf+offset, R_OK) == -1) {
+          // file doesn't exist
+          warn("Filename in msg doesn't exists, using it", 0);
+          strncpy(serv.filename, buf+offset, FILE_NSIZE);
+        }
+
+        fp = fopen(serv.filename, "w");
+        if(fp == NULL) {
+          die("p2mpserver : file cannot be opened!", errno);
+        }
+      } else {
+        //printf("writing %d bytes of %d\n", ret-HEADER_SIZE, seq_num);
+        if(fp == NULL) {
+          die("dying", 0);
+        }
+        fwrite(buf+HEADER_SIZE,ret-HEADER_SIZE,1,fp);
+        printf("Writing packet with seq num %d\n",seq_num);
+        fflush(fp);
+      }
       prev_seq_num=seq_num;
       /*
          check the to_buffer[] struct array repeatedly for any packet that is buffered and has seq_num = cur_seq_num+1;
@@ -233,7 +276,6 @@ int main(int argc, char *argv[])
       {
         printf("Oops! The world is going to end! Buffer full cannot save packet. Dropping it!\n\n");
       }
-
       else if(fill_here==-2)
       {
         printf("\n\033[01;33mAlready Exists, %d will not be buffered\n",seq_num);
@@ -242,7 +284,6 @@ int main(int argc, char *argv[])
         P2MPS_STAT_INCREMENT(&serv, P2MPS_STAT_PKTS_NR_RCVD);
         P2MPS_STAT_UPDATE(&serv, P2MPS_STAT_BYTES_NR_RCVD, ret);
       }
-
       else if(prev_seq_num<seq_num) { 
         memcpy(buf_data[fill_here].buf,buf,ret);
         buf_data[fill_here].filled=1;
@@ -267,6 +308,7 @@ int main(int argc, char *argv[])
   }
 
   close(serv.sock_server_recv);
+  fclose(fp);
 
   print_stats(&serv);
 

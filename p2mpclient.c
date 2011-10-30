@@ -16,6 +16,7 @@ void print_stats(p2mp_pcb *pcb)
 {
   stats_t *s = &(pcb->stat);
   int i;
+  struct timeval diff;
 
   printf("\nGlobal stats\n");
   printf("Timer expired         : %ld\n"
@@ -50,6 +51,13 @@ void print_stats(p2mp_pcb *pcb)
            s->stat[P2MPC_STAT_FRTRANS_PKTS_SENT][i],
            s->stat[P2MPC_STAT_FRTRANS_BYTES_SENT][i]);
   }
+
+  compute_time_diff(&(pcb->start_time), &(pcb->end_time), &diff);
+
+  if(pcb->md5[0]) {
+    printf("\nmd5 checksum of file : %s\n", pcb->md5);
+  }
+  printf("\nTime for transfer    : %ld.%ld s\n", diff.tv_sec, diff.tv_usec);
 }
 
 void buffer_init(p2mp_pcb *pcb) {
@@ -155,6 +163,8 @@ int main(int argc, char *argv[])
 
   buffer_init(&pcb);
 
+  gettimeofday(&pcb.start_time, NULL);
+
   pthread_create(&(pcb.buf_mgr), NULL, rdt_send, &pcb);
   pthread_create(&(pcb.sender), NULL, sender, &pcb);
   pthread_create(&(pcb.receiver), NULL, receiver, &pcb);
@@ -164,6 +174,9 @@ int main(int argc, char *argv[])
   pthread_join(pcb.receiver, NULL);
 
   close(pcb.sockfd);
+
+  gettimeofday(&pcb.end_time, NULL);
+
   buffer_delete(&pcb);
 
   print_stats(&pcb);

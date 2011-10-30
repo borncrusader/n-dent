@@ -109,3 +109,42 @@ void compute_checksum(uint16_t *csum, unsigned char *buf, int size)
 
   return;
 }
+
+int compute_md5(char *file_name, char *md5_sum)
+{
+  char cmd[BUFFER_SIZE];
+  FILE *p = NULL;
+  int i, ch;
+
+  snprintf(cmd, BUFFER_SIZE, "md5sum %s 2> /dev/null", file_name);
+
+  p = popen(cmd, "r");
+
+  if(p == NULL) {
+    return 0;
+  }
+
+  for(i=0; i<MD5_LEN && isxdigit(ch = fgetc(p)); i++) {
+    *md5_sum++ = ch;
+  }
+
+  *md5_sum = '\0';
+
+  pclose(p);
+
+  return (i==MD5_LEN);
+}
+
+void compute_time_diff(struct timeval *start, struct timeval *end, struct timeval *diff)
+{
+  if(end->tv_usec < start->tv_usec) {
+    diff->tv_usec = 1000000 + end->tv_usec - start->tv_usec;
+    diff->tv_sec  = end->tv_sec-1-start->tv_sec;
+  } else if(end->tv_usec > start->tv_usec) {
+    diff->tv_usec = end->tv_usec - start->tv_usec;
+    diff->tv_sec  = end->tv_sec-start->tv_sec;
+  } else {
+    diff->tv_usec = 0;
+    diff->tv_sec  = end->tv_sec-start->tv_sec;
+  }
+}
