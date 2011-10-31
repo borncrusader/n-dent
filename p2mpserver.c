@@ -187,7 +187,7 @@ int main(int argc, char *argv[])
         }
         fwrite(buf+HEADER_SIZE,ret-HEADER_SIZE,1,fp);
         printf("Writing packet with seq num %d\n",seq_num);
-        fflush(fp);
+        //flush(fp);
       }
       prev_seq_num=seq_num;
       /*
@@ -207,7 +207,7 @@ int main(int argc, char *argv[])
           //printf("writing %d bytes of %d\n", buf_data[i].buf_size-HEADER_SIZE, seq_num);
           //printf("writing %d\n", seq_num);
           fwrite(buf_data[i].buf+HEADER_SIZE,buf_data[i].buf_size-HEADER_SIZE,1,fp);
-          fflush(fp);
+          //fflush(fp);
           printf("Writing packet with sequence number %d\n ",buf_data[i].seqnum);
           buf_data[i].filled=0;
           prev_seq_num=buf_data[i].seqnum;
