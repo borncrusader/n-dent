@@ -146,7 +146,7 @@ int main(int argc, char *argv[])
 
     if(flags&FLAG_EOM) {
       last_seq_num = seq_num;
-      printf("Received EOM, sequence number = %d\n", seq_num);
+      //printf("Received EOM, sequence number = %d\n", seq_num);
     }
 
     if(seq_num==prev_seq_num+1)
@@ -183,10 +183,10 @@ int main(int argc, char *argv[])
       } else {
         //printf("writing %d bytes of %d\n", ret-HEADER_SIZE, seq_num);
         if(fp == NULL) {
-          die("dying", 0);
+          die("p2mpserver : file not available to write!", 0);
         }
         fwrite(buf+HEADER_SIZE,ret-HEADER_SIZE,1,fp);
-        printf("Writing packet with seq num %d\n",seq_num);
+        //printf("Writing packet with seq num %d\n",seq_num);
         fflush(fp);
       }
       prev_seq_num=seq_num;
@@ -208,7 +208,7 @@ int main(int argc, char *argv[])
           //printf("writing %d\n", seq_num);
           fwrite(buf_data[i].buf+HEADER_SIZE,buf_data[i].buf_size-HEADER_SIZE,1,fp);
           fflush(fp);
-          printf("Writing packet with sequence number %d\n ",buf_data[i].seqnum);
+          //printf("Writing packet with sequence number %d\n ",buf_data[i].seqnum);
           buf_data[i].filled=0;
           prev_seq_num=buf_data[i].seqnum;
           count=0;	
@@ -228,7 +228,7 @@ int main(int argc, char *argv[])
 
       pack_data(prev_seq_num, MSG_TYPE_ACK, 0, ack_buf, HEADER_SIZE);//CREATE THE ACK
       printf("\033[01;37mSending ack for sequence number = %d\n", prev_seq_num);
-	printf("%c[%dm", 0x1B, 0);
+      printf("%c[%dm", 0x1B, 0);
       sendto(serv.sock_server_recv, ack_buf, HEADER_SIZE, 0, (struct sockaddr*)&sender, sizeof(sender));//SEND THE ACK
 
       P2MPS_STAT_INCREMENT(&serv, P2MPS_STAT_ACKS_SENT);
@@ -236,8 +236,8 @@ int main(int argc, char *argv[])
 
       if(last_seq_num == prev_seq_num) {
         //printf("Written the last packet, sequence number = %d\n", seq_num);
-        system("clear");
-        printf("TRANSFER COMPLETE : QUITTING \n");
+        //system("clear");
+        //printf("TRANSFER COMPLETE : QUITTING \n");
         break;
       }
     }
@@ -275,8 +275,8 @@ int main(int argc, char *argv[])
 
       if(fill_here==-1)
       {
-        printf("\033[01;31mBuffer full cannot save packet. Dropping it!\n\n");
-	printf("%c[%dm", 0x1B, 0);
+        //printf("\033[01;31mBuffer full cannot save packet. Dropping it!\n\n");
+        //printf("%c[%dm", 0x1B, 0);
       }
       else if(fill_here==-2)
       {
@@ -292,16 +292,16 @@ int main(int argc, char *argv[])
         buf_data[fill_here].seqnum=seq_num;
         buf_data[fill_here].buf_size=ret;
         //printf("%c[%d;%d;%dm", 0x1B, 5,31,0);        	
-        printf("\n\033[22;31m %d was buffered in pos %d",seq_num,fill_here);
-        printf("%c[%dm", 0x1B, 0);
-        printf("\n");
+        //printf("\n\033[22;31m %d was buffered in pos %d",seq_num,fill_here);
+        //printf("%c[%dm", 0x1B, 0);
+        //printf("\n");
       }
 
  
       pack_data(prev_seq_num, MSG_TYPE_ACK, 0, ack_buf, HEADER_SIZE);//CREATE THE ACK
 
       printf("\033[01;37mSending ack for sequence number = %d\n", prev_seq_num);
-	printf("%c[%dm", 0x1B, 0);
+      printf("%c[%dm", 0x1B, 0);
 
       sendto(serv.sock_server_recv, ack_buf, HEADER_SIZE, 0, (struct sockaddr*)&sender, sizeof(sender));//SEND THE prev ACK
 

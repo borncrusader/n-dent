@@ -197,7 +197,7 @@ void* receiver(void *args) {
       (pcb->win.num_empty)++;
       diff_seq_num--;
 
-      printf("RECEIVER : Num of empty nodes in window : %d\n", pcb->win.num_empty);
+      //printf("RECEIVER : Num of empty nodes in window : %d\n", pcb->win.num_empty);
 
     }
 

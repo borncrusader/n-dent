@@ -94,7 +94,7 @@ void* rdt_send(void *args) {
       pcb->win.data_available = 1;
 
       if(flags & FLAG_EOM) {
-        printf("RDT_SEND : EOM Reached, buf_size : %d\n", buf_size);
+        //printf("RDT_SEND : EOM Reached, buf_size : %d\n", buf_size);
         looper = 0;
       }
 

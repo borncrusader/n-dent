@@ -21,8 +21,6 @@ void* timer(void *args)
   if(pcb->win.head->filled) {
     for(pos=0; pos<pcb->num_recv; pos++) {
       if(pcb->win.head->acks[pos] == 0) {
-        printf("TIMER : Timeout, sequence number = %d to %s:%d\n", pcb->win.head->seq_num,
-               inet_ntoa(pcb->recv[pos].sin_addr), ntohs(pcb->recv[pos].sin_port));
         ret = sendto(pcb->sockfd,
                      pcb->win.head->buf,
                      pcb->win.head->buf_size,
@@ -35,6 +33,8 @@ void* timer(void *args)
           P2MPC_STAT_INCREMENT(&(pcb->stat), P2MPC_STAT_TRTRANS_PKTS_SENT, pos);
           P2MPC_STAT_UPDATE(&(pcb->stat), P2MPC_STAT_TRTRANS_BYTES_SENT, pos, pcb->win.head->buf_size);
         }
+        printf("TIMER : Timeout, sequence number = %d to %s:%d\n", pcb->win.head->seq_num,
+               inet_ntoa(pcb->recv[pos].sin_addr), ntohs(pcb->recv[pos].sin_port));
       }
     }
   }
