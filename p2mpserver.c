@@ -58,20 +58,18 @@ void print_stats(p2mp_sb *s)
 
 int main(int argc, char *argv[])
 {
-  p2mp_sb serv;
-  P2MP_ZERO(serv);
-  struct sockaddr_in server,sender;
-  socklen_t len;
-  char ack_buf[HEADER_SIZE];
-  float drop_pkt;
   int sock_status_recv;
-  char buf[BUFFER_SIZE];
-  node buf_data[atoi(argv[3])];
   int fill_here,i;
-
-  int ret = 0, seq_num = 0, type = 0, flags=0,prev_seq_num=-1,next_there=0, last_seq_num = -1,run_flag=1,count=0,prev_ackd=-1;
-
+  int ret = 0, seq_num = 0, type = 0, flags=0,prev_seq_num=-1,next_there=0;
+  int last_seq_num = -1,run_flag=1,count=0,prev_ackd=-1;
+  float drop_pkt;
+  char buf[BUFFER_SIZE];
   char from[INET_ADDRSTRLEN];
+  char ack_buf[HEADER_SIZE];
+  socklen_t len;
+  struct sockaddr_in server,sender;
+  p2mp_sb serv;
+  node buf_data[atoi(argv[3])];
   FILE *fp = NULL;
 
   P2MP_ZERO(serv);
@@ -187,7 +185,7 @@ int main(int argc, char *argv[])
         }
         fwrite(buf+HEADER_SIZE,ret-HEADER_SIZE,1,fp);
         //printf("Writing packet with seq num %d\n",seq_num);
-        fflush(fp);
+        //fflush(fp);
       }
       prev_seq_num=seq_num;
       /*
@@ -207,7 +205,7 @@ int main(int argc, char *argv[])
           //printf("writing %d bytes of %d\n", buf_data[i].buf_size-HEADER_SIZE, seq_num);
           //printf("writing %d\n", seq_num);
           fwrite(buf_data[i].buf+HEADER_SIZE,buf_data[i].buf_size-HEADER_SIZE,1,fp);
-          fflush(fp);
+          //fflush(fp);
           //printf("Writing packet with sequence number %d\n ",buf_data[i].seqnum);
           buf_data[i].filled=0;
           prev_seq_num=buf_data[i].seqnum;
