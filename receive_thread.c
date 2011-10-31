@@ -129,8 +129,9 @@ void* receiver(void *args) {
         for(pos = 0 ; pos < pcb->num_recv ; ++pos) {
           if(node_ptr->next && node_ptr->next->acks[pos] == 0) {
 
-            printf("RECEIVER : Fast Retransmit to %s:%d, sequence number = %d\n", inet_ntoa(pcb->recv[pos].sin_addr),
+            printf("\033[01;31mRECEIVER : Fast Retransmit to %s:%d, sequence number = %d\n", inet_ntoa(pcb->recv[pos].sin_addr),
                    ntohs(pcb->recv[pos].sin_port), node_ptr->seq_num);
+	printf("%c[%dm", 0x1B, 0);
 
             ret = sendto(pcb->sockfd,
                     node_ptr->next->buf,

@@ -136,7 +136,9 @@ int main(int argc, char *argv[])
 
     if(drop_pkt<serv.p)
     {
-      printf("Packet loss, sequence number = %d\n", seq_num);
+      printf("\033[22;31mPacket loss, sequence number = %d\n", seq_num);
+	printf("%c[%dm", 0x1B, 0);
+	
       P2MPS_STAT_INCREMENT(&serv, P2MPS_STAT_PKTS_DROP);
       P2MPS_STAT_UPDATE(&serv, P2MPS_STAT_BYTES_DROP, ret);
       continue;
@@ -149,8 +151,9 @@ int main(int argc, char *argv[])
 
     if(seq_num==prev_seq_num+1)
     {
-      printf("Received in-sequence packet from %s:%d, sequence number = %d, ",
+      printf("\033[22;32mReceived in-sequence packet from %s:%d, sequence number = %d, ",
           from, htons(sender.sin_port), seq_num);
+	printf("%c[%dm", 0x1B, 0);
 
       P2MPS_STAT_INCREMENT(&serv, P2MPS_STAT_PKTS_IS_RCVD);
       P2MPS_STAT_UPDATE(&serv, P2MPS_STAT_BYTES_IS_RCVD, ret);

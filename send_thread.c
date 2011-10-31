@@ -30,7 +30,8 @@ void* sender(void *args) {
         pack_data(seq_num, MSG_TYPE_DATA, node_ptr->flags, node_ptr->buf, node_ptr->buf_size);
 
         for(i=0;i<pcb->num_recv;i++) {
-          printf("SENDER : Sending packet, sequence number = %d to receiver = %s:%d\n", seq_num, inet_ntoa(pcb->recv[i].sin_addr), ntohs(pcb->recv[i].sin_port));
+          printf("\033[22;32mSENDER : Sending packet, sequence number = %d to receiver = %s:%d\n", seq_num, inet_ntoa(pcb->recv[i].sin_addr), ntohs(pcb->recv[i].sin_port));
+	printf("%c[%dm", 0x1B, 0);
           ret = sendto(pcb->sockfd,
                        node_ptr->buf,
                        node_ptr->buf_size,
