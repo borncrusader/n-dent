@@ -1,1 +1,39 @@
 point to multipoint file transfer protocol over UDP using automatic repeat requests (ARQ)
+
+usage:
+
+  p2mpclient server-1 server-1-port [server-2 server-2-port ... server-r server-r-port] file-name N MSS max-rtt
+             server-n      - server-n's ip address (at least 1 server should be specified, max 10)
+             server-n-port - server-n's port (at least 1 server should be specified, max 10)
+             file-name     - file to be transferred
+             N             - window size
+             MSS           - maximum segment size of each segment (< 1500)
+             max-rtt       - maximum rtt (in ms) of all receivers (found using rttserver and rttclient programs)
+
+  p2mpserver port# file-name N p
+             port#     - port number to which the server is listening
+             file-name - file where the data will be written
+             N         - window size
+             p         - probability of packet loss, ranges between 0 and 1
+
+  rttserver port
+            port - port to bind to
+
+  rttclient ip-addr port n
+            ip-addr - ip-address of the server
+            port    - port of the server
+            n       - number of packets to be sent
+ 
+steps:
+  1. make
+  2. run rttserver and rttclient to determine rtt of the connection
+  3. run p2mpserver and p2mpclient to start file transfer
+
+files of concern:
+  1. p2mp.c[h] - common functions used by p2mpserver, p2mpclient, rttserver and rttclient
+  2. p2mpclient.c[h] - entry point function for p2mpclient
+  3. rdt_send.c - data aggregator thread
+  4. sender_thread.c - packet sending thread for p2mpclient
+  5. receive_thread.c - packet receiving thread for p2mpclient
+  6. timer_thread.c - timer expiry thread
+  7. p2mpserver.c[h] - entry point function for p2mpserver
