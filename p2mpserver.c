@@ -3,10 +3,10 @@
 
 void usage() {
   printf("p2mpserver port# file-name N p\n");
-  printf("           port# - port number to which the server is listening\n");
+  printf("           port#     - port number to which the server is listening\n");
   printf("           file-name - file where the data will be written\n");
-  printf("           N - window size\n");
-  printf("           p - probability of packet loss, ranges between 0 and 1\n");
+  printf("           N         - window size\n");
+  printf("           p         - probability of packet loss, ranges between 0 and 1\n");
   exit(1);
 }
 
