@@ -33,8 +33,10 @@ void* timer(void *args)
           P2MPC_STAT_INCREMENT(&(pcb->stat), P2MPC_STAT_TRTRANS_PKTS_SENT, pos);
           P2MPC_STAT_UPDATE(&(pcb->stat), P2MPC_STAT_TRTRANS_BYTES_SENT, pos, pcb->win.head->buf_size);
         }
-        printf("TIMER : Timeout, sequence number = %d to %s:%d\n", pcb->win.head->seq_num,
+        printf("\033[22;31mTIMER : Timeout, sequence number = %d to %s:%d\n", pcb->win.head->seq_num,
                inet_ntoa(pcb->recv[pos].sin_addr), ntohs(pcb->recv[pos].sin_port));
+	printf("%c[%dm", 0x1B, 0);
+
       }
     }
   }
